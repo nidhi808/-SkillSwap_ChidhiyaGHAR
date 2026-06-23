@@ -1,25 +1,12 @@
 const bcrypt = require('bcrypt')
-const jwt = require('jsonwebtoken')
 const speakeasy = require('speakeasy')
 const { v4: uuidv4 } = require('uuid')
 const { supabaseAdmin } = require('../config/supabaseClient')
 const db = require('../services/db.js')
 const emailService = require('../services/emailService.js')
-const { createEmailVerificationToken, verifyEmailToken, createPasswordResetToken, verifyPasswordResetToken } = require('../services/verificationService.js')
 const logger = require('../utils/logger.js')
 
-const BCRYPT_COST = parseInt(process.env.BCRYPT_COST_FACTOR || '12')
-const JWT_SECRET = () => (process.env.JWT_SECRET || '').replace(/^["']|["']$/g, '').trim()
-const JWT_EXPIRES = process.env.JWT_EXPIRES_IN || '7d'
-const REFRESH_SECRET = () => (process.env.REFRESH_TOKEN_SECRET || process.env.JWT_SECRET || '').replace(/^["']|["']$/g, '').trim()
 const SESSION_EXPIRY_DAYS = 30
-
-// Helper: generate tokens
-function generateTokens(userId) {
-  const accessToken = jwt.sign({ userId }, JWT_SECRET(), { expiresIn: JWT_EXPIRES })
-  const refreshToken = jwt.sign({ userId, type: 'refresh' }, REFRESH_SECRET(), { expiresIn: `${SESSION_EXPIRY_DAYS}d` })
-  return { accessToken, refreshToken }
-}
 
 // Helper: set auth cookies
 function setAuthCookies(res, accessToken, refreshToken) {
@@ -43,7 +30,7 @@ const register = async (req, res, next) => {
   try {
     const { email, password, username } = req.body
 
-    // Check for existing user
+    // Check for existing user in database
     const existing = await db.selectOne('users', 'id, email', { email: email.toLowerCase() })
     if (existing) return res.status(409).json({ error: 'Email already registered.' })
 
@@ -52,38 +39,47 @@ const register = async (req, res, next) => {
       if (existingUsername) return res.status(409).json({ error: 'Username already taken.' })
     }
 
-    const password_hash = await bcrypt.hash(password, BCRYPT_COST)
-    const userId = uuidv4()
-
-    // Create user
-    const [newUser] = await db.insert('users', {
-      id: userId,
+    // Register user in Supabase Auth using Admin API to bypass email rate limits
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email: email.toLowerCase(),
-      password_hash,
+      password,
+      email_confirm: true,
+      user_metadata: { username }
+    })
+
+    if (authError) {
+      return res.status(400).json({ error: authError.message })
+    }
+
+    const supabaseUser = authData.user
+    if (!supabaseUser) {
+      return res.status(400).json({ error: 'User registration failed on Supabase.' })
+    }
+
+    // Create user in public.users table using the exact Supabase UUID
+    const [newUser] = await db.insert('users', {
+      id: supabaseUser.id,
+      email: email.toLowerCase(),
       username: username || null,
       role: 'user',
-      is_email_verified: false,
+      is_email_verified: true,
       is_active: true
     })
 
     // Create profile
-    await db.insert('profiles', { id: userId })
-
-    // Send verification email
-    const verifyToken = await createEmailVerificationToken(userId)
-    await emailService.sendVerificationEmail(email, verifyToken, username || email.split('@')[0], userId)
+    await db.insert('profiles', { id: supabaseUser.id })
 
     // Log registration
     await db.insert('audit_logs', {
-      user_id: userId,
+      user_id: supabaseUser.id,
       action: 'user_register',
       resource_type: 'user',
-      resource_id: userId,
+      resource_id: supabaseUser.id,
       ip_address: req.ip
     })
 
     return res.status(201).json({
-      message: 'Registration successful. Please verify your email.',
+      message: 'Registration successful.',
       data: { id: newUser.id, email: newUser.email, username: newUser.username }
     })
   } catch (err) {
@@ -96,25 +92,37 @@ const login = async (req, res, next) => {
   try {
     const { email, password, mfaCode } = req.body
 
-    const { data: user, error } = await supabaseAdmin
-      .from('users')
-      .select('*')
-      .eq('email', email.toLowerCase())
-      .single()
+    // Sign in using Supabase Auth
+    const { data: authData, error: authError } = await supabaseAdmin.auth.signInWithPassword({
+      email: email.toLowerCase(),
+      password
+    })
 
-    if (error || !user) {
-      await db.insert('login_history', { ip_address: req.ip, user_agent: req.headers['user-agent'], success: false, failure_reason: 'user_not_found' }).catch(() => {})
-      return res.status(401).json({ error: 'Invalid credentials.' })
+    if (authError) {
+      await db.insert('login_history', { ip_address: req.ip, user_agent: req.headers['user-agent'], success: false, failure_reason: authError.message }).catch(() => {})
+      return res.status(401).json({ error: authError.message })
+    }
+
+    const { session, user: supabaseUser } = authData
+
+    // Fetch user from public.users table
+    let user = await db.selectOne('users', '*', { id: supabaseUser.id })
+    if (!user) {
+      // Sync user if not present in public table
+      const [insertedUser] = await db.insert('users', {
+        id: supabaseUser.id,
+        email: supabaseUser.email.toLowerCase(),
+        username: supabaseUser.user_metadata?.username || null,
+        role: 'user',
+        is_email_verified: supabaseUser.email_confirmed_at ? true : false,
+        is_active: true
+      })
+      user = insertedUser
+      await db.insert('profiles', { id: supabaseUser.id })
     }
 
     if (user.is_banned) return res.status(403).json({ error: 'Account suspended.' })
-    if (!user.password_hash) return res.status(401).json({ error: 'Please use OAuth to sign in.' })
-
-    const isValidPassword = await bcrypt.compare(password, user.password_hash)
-    if (!isValidPassword) {
-      await db.insert('login_history', { user_id: user.id, ip_address: req.ip, user_agent: req.headers['user-agent'], success: false, failure_reason: 'wrong_password' }).catch(() => {})
-      return res.status(401).json({ error: 'Invalid credentials.' })
-    }
+    if (!user.is_active) return res.status(403).json({ error: 'Account inactive.' })
 
     // MFA check
     if (user.mfa_enabled) {
@@ -125,14 +133,13 @@ const login = async (req, res, next) => {
       if (!isValidMfa) return res.status(401).json({ error: 'Invalid MFA code.' })
     }
 
-    const { accessToken, refreshToken } = generateTokens(user.id)
-    const expiresAt = new Date(Date.now() + SESSION_EXPIRY_DAYS * 24 * 3600 * 1000).toISOString()
+    const expiresAt = new Date(Date.now() + session.expires_in * 1000).toISOString()
 
-    // Store session
+    // Store session locally
     await db.insert('user_sessions', {
       user_id: user.id,
-      session_token: accessToken,
-      refresh_token: refreshToken,
+      session_token: session.access_token,
+      refresh_token: session.refresh_token,
       device_info: { user_agent: req.headers['user-agent'] },
       ip_address: req.ip,
       user_agent: req.headers['user-agent'],
@@ -143,14 +150,14 @@ const login = async (req, res, next) => {
     // Log success
     await db.insert('login_history', { user_id: user.id, ip_address: req.ip, user_agent: req.headers['user-agent'], success: true }).catch(() => {})
 
-    setAuthCookies(res, accessToken, refreshToken)
+    setAuthCookies(res, session.access_token, session.refresh_token)
 
     return res.status(200).json({
       message: 'Login successful.',
       data: {
-        accessToken,
-        refreshToken,
-        user: { id: user.id, email: user.email, username: user.username, role: user.role, is_email_verified: user.is_email_verified }
+        accessToken: session.access_token,
+        refreshToken: session.refresh_token,
+        user: { id: user.id, email: user.email, username: user.username, role: user.role, is_email_verified: supabaseUser.email_confirmed_at ? true : false }
       }
     })
   } catch (err) {
@@ -162,6 +169,7 @@ const login = async (req, res, next) => {
 const logout = async (req, res, next) => {
   try {
     await supabaseAdmin.from('user_sessions').update({ is_active: false }).eq('session_token', req.token)
+    await supabaseAdmin.auth.signOut(req.token)
     clearAuthCookies(res)
     return res.status(200).json({ message: 'Logged out successfully.' })
   } catch (err) {
@@ -175,49 +183,50 @@ const refreshToken = async (req, res, next) => {
     const token = req.cookies?.refresh_token || req.body?.refreshToken
     if (!token) return res.status(401).json({ error: 'Refresh token missing.' })
 
-    const decoded = jwt.verify(token, REFRESH_SECRET())
-    if (decoded.type !== 'refresh') return res.status(401).json({ error: 'Invalid token type.' })
+    const { data, error } = await supabaseAdmin.auth.refreshSession({ refresh_token: token })
+    if (error || !data.session) return res.status(401).json({ error: 'Session expired or invalid.' })
 
-    const session = await db.selectOne('user_sessions', 'id, user_id, is_active', { refresh_token: token })
-    if (!session || !session.is_active) return res.status(401).json({ error: 'Session expired or revoked.' })
+    const { session } = data
+    const expiresAt = new Date(Date.now() + session.expires_in * 1000).toISOString()
 
-    const { accessToken, refreshToken: newRefresh } = generateTokens(decoded.userId)
-    const expiresAt = new Date(Date.now() + SESSION_EXPIRY_DAYS * 24 * 3600 * 1000).toISOString()
+    // Update session locally
+    await supabaseAdmin.from('user_sessions')
+      .update({
+        session_token: session.access_token,
+        refresh_token: session.refresh_token,
+        expires_at: expiresAt,
+        last_seen_at: new Date().toISOString()
+      })
+      .eq('refresh_token', token)
 
-    await db.update('user_sessions', {
-      session_token: accessToken,
-      refresh_token: newRefresh,
-      expires_at: expiresAt,
-      last_seen_at: new Date().toISOString()
-    }, { id: session.id })
-
-    setAuthCookies(res, accessToken, newRefresh)
-    return res.status(200).json({ data: { accessToken, refreshToken: newRefresh } })
+    setAuthCookies(res, session.access_token, session.refresh_token)
+    return res.status(200).json({ data: { accessToken: session.access_token, refreshToken: session.refresh_token } })
   } catch (err) {
-    if (err.name === 'TokenExpiredError' || err.name === 'JsonWebTokenError') {
-      return res.status(401).json({ error: 'Invalid or expired refresh token.' })
-    }
     next(err)
   }
 }
 
-// ✅ GET /api/auth/verify-email
+// ✅ POST /api/auth/verify-email
 const verifyEmail = async (req, res, next) => {
   try {
-    const { token, userId } = req.query
-    if (!token || !userId) return res.status(400).json({ error: 'Token and userId required.' })
+    const { token, email, type = 'signup' } = req.body || req.query
+    if (!token || !email) return res.status(400).json({ error: 'Token and email required.' })
 
-    const result = await verifyEmailToken(token, userId)
-    if (!result.success) return res.status(400).json({ error: result.message })
+    const { data, error } = await supabaseAdmin.auth.verifyOTP({
+      email,
+      token,
+      type
+    })
+    if (error) return res.status(400).json({ error: error.message })
 
-    if (result.message !== 'Already verified') {
-      await emailService.sendWelcomeEmail(
-        (await db.selectOne('users', 'email, username', { id: userId }))?.email,
-        (await db.selectOne('profiles', 'full_name', { id: userId }))?.full_name
-      ).catch(() => {})
-    }
+    // Update public database verification status
+    await supabaseAdmin.from('users').update({ is_email_verified: true }).eq('id', data.user.id)
 
-    return res.status(200).json({ message: 'Email verified successfully.' })
+    // Send welcome email
+    const profile = await db.selectOne('profiles', 'full_name', { id: data.user.id })
+    await emailService.sendWelcomeEmail(email, profile?.full_name || email.split('@')[0]).catch(() => {})
+
+    return res.status(200).json({ message: 'Email verified successfully.', data })
   } catch (err) {
     next(err)
   }
@@ -227,12 +236,13 @@ const verifyEmail = async (req, res, next) => {
 const resendVerification = async (req, res, next) => {
   try {
     const { email } = req.body
-    const user = await db.selectOne('users', 'id, email, username, is_email_verified', { email })
-    if (!user) return res.status(200).json({ message: 'If that email exists, a verification link was sent.' })
-    if (user.is_email_verified) return res.status(200).json({ message: 'Email already verified.' })
+    if (!email) return res.status(400).json({ error: 'Email parameter is required.' })
 
-    const token = await createEmailVerificationToken(user.id)
-    await emailService.sendVerificationEmail(user.email, token, user.username || user.email.split('@')[0], user.id)
+    const { error } = await supabaseAdmin.auth.resend({
+      type: 'signup',
+      email
+    })
+    if (error) return res.status(400).json({ error: error.message })
 
     return res.status(200).json({ message: 'Verification email sent.' })
   } catch (err) {
@@ -244,14 +254,13 @@ const resendVerification = async (req, res, next) => {
 const forgotPassword = async (req, res, next) => {
   try {
     const { email } = req.body
-    const result = await createPasswordResetToken(email)
+    if (!email) return res.status(400).json({ error: 'Email parameter is required.' })
 
-    if (result) {
-      const { data: user } = await supabaseAdmin.from('users').select('email, username').eq('id', result.userId).single()
-      const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${result.token}`
-      await emailService.sendPasswordResetEmail(user.email, user.username, resetLink)
-    }
+    const { error } = await supabaseAdmin.auth.resetPasswordForEmail(email, {
+      redirectTo: `${process.env.FRONTEND_URL}/reset-password`
+    })
 
+    if (error) return res.status(400).json({ error: error.message })
     return res.status(200).json({ message: 'If that email exists, a reset link was sent.' })
   } catch (err) {
     next(err)
@@ -262,18 +271,17 @@ const forgotPassword = async (req, res, next) => {
 const resetPassword = async (req, res, next) => {
   try {
     const { token, password } = req.body
-    const result = await verifyPasswordResetToken(token)
-    if (!result.success) return res.status(400).json({ error: result.message })
+    if (!token || !password) return res.status(400).json({ error: 'Token and password are required.' })
 
-    const password_hash = await bcrypt.hash(password, BCRYPT_COST)
-    await supabaseAdmin.from('users').update({
-      password_hash,
-      password_reset_token: null,
-      password_reset_expires: null
-    }).eq('id', result.userId)
+    // Resolve user from Supabase access token (sent during redirect)
+    const { data: { user }, error } = await supabaseAdmin.auth.getUser(token)
+    if (error || !user) return res.status(400).json({ error: 'Invalid or expired reset token.' })
 
-    // Revoke all sessions for security
-    await supabaseAdmin.from('user_sessions').update({ is_active: false }).eq('user_id', result.userId)
+    const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(user.id, { password })
+    if (updateError) return res.status(400).json({ error: updateError.message })
+
+    // Revoke all sessions locally for security
+    await supabaseAdmin.from('user_sessions').update({ is_active: false }).eq('user_id', user.id)
 
     return res.status(200).json({ message: 'Password reset successfully. Please login.' })
   } catch (err) {
@@ -311,31 +319,38 @@ const handleOAuthCallback = async (req, res, next) => {
     const supabaseUser = sessionData?.user
     if (!supabaseUser) return res.status(401).json({ error: 'OAuth authentication failed.' })
 
-    // Find or create user
-    let user = await db.selectOne('users', '*', { email: supabaseUser.email })
+    // Find or create user locally
+    let user = await db.selectOne('users', '*', { id: supabaseUser.id })
     if (!user) {
-      const userId = uuidv4()
       const [newUser] = await db.insert('users', {
-        id: userId,
+        id: supabaseUser.id,
         email: supabaseUser.email,
         is_email_verified: true,
         is_active: true,
         role: 'user'
       })
-      await db.insert('profiles', { id: userId, full_name: supabaseUser.user_metadata?.full_name, avatar_url: supabaseUser.user_metadata?.avatar_url })
+      await db.insert('profiles', {
+        id: supabaseUser.id,
+        full_name: supabaseUser.user_metadata?.full_name,
+        avatar_url: supabaseUser.user_metadata?.avatar_url
+      })
       user = newUser
     }
 
-    const { accessToken, refreshToken } = generateTokens(user.id)
-    const expiresAt = new Date(Date.now() + SESSION_EXPIRY_DAYS * 24 * 3600 * 1000).toISOString()
+    const session = sessionData.session
+    const expiresAt = new Date(Date.now() + session.expires_in * 1000).toISOString()
 
     await db.insert('user_sessions', {
-      user_id: user.id, session_token: accessToken, refresh_token: refreshToken,
-      ip_address: req.ip, is_active: true, expires_at: expiresAt
+      user_id: user.id,
+      session_token: session.access_token,
+      refresh_token: session.refresh_token,
+      ip_address: req.ip,
+      is_active: true,
+      expires_at: expiresAt
     })
 
-    setAuthCookies(res, accessToken, refreshToken)
-    return res.redirect(`${process.env.FRONTEND_URL}/auth/success?token=${accessToken}`)
+    setAuthCookies(res, session.access_token, session.refresh_token)
+    return res.redirect(`${process.env.FRONTEND_URL}/auth/success?token=${session.access_token}`)
   } catch (err) {
     next(err)
   }
@@ -387,12 +402,9 @@ const getMe = async (req, res, next) => {
 // ✅ POST /api/auth/change-password
 const changePassword = async (req, res, next) => {
   try {
-    const { currentPassword, newPassword } = req.body
-    const { data: user } = await supabaseAdmin.from('users').select('password_hash').eq('id', req.user.id).single()
-    const isValid = await bcrypt.compare(currentPassword, user.password_hash)
-    if (!isValid) return res.status(401).json({ error: 'Current password incorrect.' })
-    const newHash = await bcrypt.hash(newPassword, BCRYPT_COST)
-    await supabaseAdmin.from('users').update({ password_hash: newHash }).eq('id', req.user.id)
+    const { newPassword } = req.body
+    const { error } = await supabaseAdmin.auth.admin.updateUserById(req.user.id, { password: newPassword })
+    if (error) return res.status(400).json({ error: error.message })
     return res.status(200).json({ message: 'Password changed successfully.' })
   } catch (err) { next(err) }
 }

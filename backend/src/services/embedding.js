@@ -1,16 +1,17 @@
-const OpenAI = require('openai')
+const { GoogleGenerativeAI } = require('@google/generative-ai')
 const logger = require('../utils/logger.js')
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
 
-const EMBEDDING_MODEL = process.env.OPENAI_EMBEDDING_MODEL || 'text-embedding-ada-002'
-const EMBEDDING_DIMENSIONS = parseInt(process.env.OPENAI_EMBEDDING_DIMENSIONS || '1536')
+const EMBEDDING_MODEL = 'text-embedding-004'
+const EMBEDDING_DIMENSIONS = 1536 // Match PostgreSQL database index dimension
 const MAX_RETRIES = 3
 const RETRY_DELAY_MS = 1000
 
-// ✅ Retry helper with exponential backoff
+// Helper: sleep
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
+// Retry helper with exponential backoff
 async function withRetry(fn, retries = MAX_RETRIES) {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
@@ -24,29 +25,41 @@ async function withRetry(fn, retries = MAX_RETRIES) {
   }
 }
 
-// ✅ Generate embedding for a single text
+/**
+ * Generate semantic embedding for a single text string using Gemini.
+ * Pads the resulting vector to 1536 dimensions with zeros to fit PostgreSQL's vector(1536) constraints.
+ */
 async function generateEmbedding(text) {
   if (!text || typeof text !== 'string') {
     throw new Error('[Embedding] Input must be a non-empty string')
   }
 
-  // Truncate to avoid token limit (ada-002 supports 8191 tokens)
   const truncated = text.substring(0, 8000).trim()
 
   return withRetry(async () => {
-    const response = await openai.embeddings.create({
-      model: EMBEDDING_MODEL,
-      input: truncated
-    })
-    const embedding = response.data[0]?.embedding
-    if (!embedding || embedding.length !== EMBEDDING_DIMENSIONS) {
-      throw new Error(`[Embedding] Unexpected dimensions: got ${embedding?.length}, expected ${EMBEDDING_DIMENSIONS}`)
+    const model = genAI.getGenerativeModel({ model: EMBEDDING_MODEL })
+    const result = await model.embedContent(truncated)
+    const values = result.embedding?.values
+
+    if (!values || !Array.isArray(values)) {
+      throw new Error('[Embedding] Failed to retrieve embedding values from Gemini')
     }
-    return embedding
+
+    // Pad with zeros to scale to 1536 dimensions mathematically preserving cosine similarity rankings
+    if (values.length < EMBEDDING_DIMENSIONS) {
+      const padding = new Array(EMBEDDING_DIMENSIONS - values.length).fill(0)
+      return [...values, ...padding]
+    } else if (values.length > EMBEDDING_DIMENSIONS) {
+      return values.slice(0, EMBEDDING_DIMENSIONS)
+    }
+
+    return values
   })
 }
 
-// ✅ Generate embeddings for multiple texts in batch
+/**
+ * Generate embeddings for multiple texts in batch.
+ */
 async function generateEmbeddingsBatch(texts, batchSize = 20) {
   if (!Array.isArray(texts) || texts.length === 0) {
     throw new Error('[Embedding] Input must be a non-empty array')
@@ -54,19 +67,15 @@ async function generateEmbeddingsBatch(texts, batchSize = 20) {
 
   const results = []
   for (let i = 0; i < texts.length; i += batchSize) {
-    const batch = texts.slice(i, i + batchSize).map(t => t.substring(0, 8000).trim())
-    const response = await withRetry(() => openai.embeddings.create({
-      model: EMBEDDING_MODEL,
-      input: batch
-    }))
-    const embeddings = response.data.map(d => d.embedding)
+    const batch = texts.slice(i, i + batchSize)
+    const promises = batch.map(t => generateEmbedding(t))
+    const embeddings = await Promise.all(promises)
     results.push(...embeddings)
     logger.info(`[Embedding] Batch ${Math.ceil((i + 1) / batchSize)} completed (${results.length}/${texts.length})`)
   }
   return results
 }
 
-// ✅ Build a rich text representation of a user profile for embedding
 function buildProfileEmbeddingText(profile, skillsOffered = [], skillsWanted = []) {
   const parts = []
   if (profile.full_name) parts.push(`Name: ${profile.full_name}`)
@@ -81,7 +90,6 @@ function buildProfileEmbeddingText(profile, skillsOffered = [], skillsWanted = [
   return parts.join('\n')
 }
 
-// ✅ Build embedding text for a skill offering
 function buildSkillEmbeddingText(skillName, proficiencyLevel, description = '') {
   return [
     `Skill: ${skillName}`,

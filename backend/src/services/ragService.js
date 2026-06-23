@@ -1,11 +1,14 @@
 const { supabaseAdmin } = require('../config/supabaseClient')
 const { generateEmbedding } = require('./embedding.js')
-const OpenAI = require('openai')
+const { GoogleGenerativeAI } = require('@google/generative-ai')
 const logger = require('../utils/logger.js')
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+const MODEL_NAME = 'gemini-1.5-flash' // Standard model for contextual Q&A
 
-// ✅ RAG: Retrieve relevant session notes and knowledge for a question
+/**
+ * RAG: Retrieve relevant session notes and knowledge for a question.
+ */
 async function retrieveRelevantContext(userId, query, { topK = 5 } = {}) {
   try {
     const queryEmbedding = await generateEmbedding(query)
@@ -30,7 +33,9 @@ async function retrieveRelevantContext(userId, query, { topK = 5 } = {}) {
   }
 }
 
-// ✅ RAG Q&A pipeline: answer a user's learning question with context
+/**
+ * RAG Q&A pipeline: answer a user's learning question with context using Gemini.
+ */
 async function answerLearningQuestion(userId, question) {
   try {
     const contextDocs = await retrieveRelevantContext(userId, question)
@@ -50,20 +55,21 @@ ${contextText}
 
 Please provide a helpful, personalized answer.`
 
-    const completion = await openai.chat.completions.create({
-      model: process.env.OPENAI_MODEL || 'gpt-4o',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt }
-      ],
-      temperature: 0.7,
-      max_tokens: 1000
+    const model = genAI.getGenerativeModel({ model: MODEL_NAME })
+
+    // Use system instructions inside chat initialization for Gemini
+    const chat = model.startChat({
+      history: [],
+      systemInstruction: systemPrompt
     })
 
+    const result = await chat.sendMessage(userPrompt)
+    const answer = result.response.text()
+
     return {
-      answer: completion.choices[0].message.content,
+      answer,
       sources: contextDocs.length,
-      model: completion.model
+      model: MODEL_NAME
     }
   } catch (err) {
     logger.error(`[RAG] answerLearningQuestion error: ${err.message}`)
@@ -71,21 +77,20 @@ Please provide a helpful, personalized answer.`
   }
 }
 
-// ✅ Generate skill-based knowledge summary for onboarding
+/**
+ * Generate skill-based knowledge summary for onboarding using Gemini.
+ */
 async function generateSkillSummary(skillName, targetLevel) {
   try {
     const prompt = `Create a concise learning roadmap for someone who wants to learn "${skillName}" to ${targetLevel} level on SkillSwap.
 Include: 3-5 key concepts to master, estimated time with a peer tutor, and what they should be able to do at the end.
 Keep it under 200 words and make it motivating.`
 
-    const completion = await openai.chat.completions.create({
-      model: process.env.OPENAI_MODEL || 'gpt-4o',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.8,
-      max_tokens: 300
-    })
+    const model = genAI.getGenerativeModel({ model: MODEL_NAME })
+    const result = await model.generateContent(prompt)
+    const text = result.response.text()
 
-    return completion.choices[0].message.content
+    return text.trim()
   } catch (err) {
     logger.error(`[RAG] generateSkillSummary error: ${err.message}`)
     return null

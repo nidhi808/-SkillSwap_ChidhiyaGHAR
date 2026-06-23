@@ -1,11 +1,12 @@
-const OpenAI = require('openai')
+const { GoogleGenerativeAI } = require('@google/generative-ai')
 const { supabaseAdmin } = require('../config/supabaseClient')
 const logger = require('../utils/logger.js')
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+const MODEL_NAME = 'gemini-1.5-flash' // Gemini 1.5 Flash is ideal for fast, lightweight explanations
 
 /**
- * Generates an AI-powered explanation for a match between two users
+ * Generates an AI-powered explanation for a match between two users using Google Gemini
  */
 async function generateMatchExplanation(userAId, userBId) {
   try {
@@ -36,14 +37,11 @@ async function generateMatchExplanation(userAId, userBId) {
 
     Keep the explanation under 80 words. Be natural, conversational, and direct, highlighting mutual learning opportunity.`
 
-    const completion = await openai.chat.completions.create({
-      model: process.env.OPENAI_MODEL || 'gpt-4o',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.7,
-      max_tokens: 150
-    })
+    const model = genAI.getGenerativeModel({ model: MODEL_NAME })
+    const result = await model.generateContent(prompt)
+    const text = result.response.text()
 
-    return completion.choices[0].message.content.trim()
+    return text.trim()
   } catch (err) {
     logger.error(`[AI Matching] generateMatchExplanation error: ${err.message}`)
     return 'Our AI matching algorithm matches you based on your complementary skill offerings and requirements.'

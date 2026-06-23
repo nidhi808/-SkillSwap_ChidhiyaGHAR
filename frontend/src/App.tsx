@@ -6,6 +6,7 @@ import { ProfileBuilder } from './components/ProfileBuilder';
 import { Dashboard } from './components/Dashboard';
 import { WhiteboardRoom } from './components/WhiteboardRoom';
 import { Volume2, VolumeX, Activity, ShieldCheck } from 'lucide-react';
+import { api } from './services/api';
 
 type AppView = 'landing' | 'auth' | 'profile' | 'dashboard' | 'whiteboard';
 
@@ -21,6 +22,7 @@ interface UserProfile {
 
 function App() {
   const [view, setView] = useState<AppView>('landing');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [audioActive, setAudioActive] = useState(false);
   const cursorRef = useRef<HTMLDivElement | null>(null);
@@ -30,13 +32,13 @@ function App() {
 
   // Onboarded Profile
   const [userProfile, setUserProfile] = useState<UserProfile>({
-    name: 'Nidhi Vekhande',
+    name: '',
     age: 20,
-    college: 'IIT Delhi',
-    branch: 'Computer Science',
-    course: 'B.Tech',
-    teachingSkills: ['Python', 'React'],
-    learningSkills: ['C Language', 'UI/UX Design'],
+    college: '',
+    branch: '',
+    course: '',
+    teachingSkills: [],
+    learningSkills: [],
   });
 
   // Whiteboard meet details
@@ -50,9 +52,10 @@ function App() {
     }
 
     const handleScroll = () => {
+      const scrollTop = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
       const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
       if (scrollHeight <= 0) return;
-      const progress = window.scrollY / scrollHeight;
+      const progress = scrollTop / scrollHeight;
       setScrollProgress(Math.min(1.0, Math.max(0, progress)));
     };
 
@@ -74,6 +77,88 @@ function App() {
     return () => window.removeEventListener('mousemove', moveCursor);
   }, []);
 
+  const checkAuthAndSetView = async () => {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      setIsLoggedIn(false);
+      return;
+    }
+
+    try {
+      console.log('[Session Check] Fetching profile from backend...');
+      const res = await api.profile.getMyProfile();
+      console.log('[Session Check] Profile response received:', res);
+      if (res.data) {
+        const prof = res.data;
+        const teaching = prof.user_skills_offered?.map((s: any) => s.skills?.name).filter(Boolean) || [];
+        const learning = prof.user_skills_wanted?.map((s: any) => s.skills?.name).filter(Boolean) || [];
+        
+        setUserProfile({
+          name: prof.full_name || prof.users?.username || 'Cyber Node',
+          age: 20,
+          college: prof.location || 'Grid Network',
+          branch: prof.city || 'General Engineering',
+          course: prof.state_code || 'B.Tech',
+          teachingSkills: teaching.length ? teaching : ['Python', 'React'],
+          learningSkills: learning.length ? learning : ['C Language', 'UI/UX Design'],
+        });
+
+        setIsLoggedIn(true);
+
+        const isComplete = prof.is_profile_complete || !!(prof.full_name && prof.location && prof.city);
+        console.log('[Session Check] Profile complete:', isComplete, 'Routing to:', isComplete ? 'dashboard' : 'profile');
+
+        if (isComplete) {
+          setView('dashboard');
+        } else {
+          setView('profile');
+        }
+      } else {
+        console.warn('[Session Check] Profile data is null, redirecting to landing...');
+        localStorage.removeItem('access_token');
+        setIsLoggedIn(false);
+        setView('landing');
+      }
+    } catch (err: any) {
+      console.error('[Session Check] Failed to retrieve user profile:', err);
+      localStorage.removeItem('access_token');
+      setIsLoggedIn(false);
+      setView('landing');
+    }
+  };
+
+  // Handle Supabase Auth Redirect hashes (e.g. email confirmation redirect)
+  useEffect(() => {
+    const handleHashAuth = async () => {
+      const hash = window.location.hash;
+      if (!hash) {
+        // Normal mount flow
+        checkAuthAndSetView();
+        return;
+      }
+
+      const params = new URLSearchParams(hash.substring(1));
+      const accessToken = params.get('access_token');
+      const refreshToken = params.get('refresh_token');
+
+      if (accessToken) {
+        console.log('[Auth Callback] Detected access token in URL hash');
+        localStorage.setItem('access_token', accessToken);
+        if (refreshToken) {
+          localStorage.setItem('refresh_token', refreshToken);
+        }
+        
+        // Clear the hash from address bar for clean URL
+        window.history.replaceState(null, '', window.location.pathname);
+
+        checkAuthAndSetView();
+        setVisorState('success');
+      }
+    };
+
+    handleHashAuth();
+  }, []);
+
   const handleEnterRoom = (roomData: { tutor: string; student: string; skill: string }) => {
     setActiveRoom(roomData);
     setView('whiteboard');
@@ -82,6 +167,17 @@ function App() {
   const handleProfileComplete = (profile: UserProfile) => {
     setUserProfile(profile);
     setView('dashboard');
+  };
+
+  const handleLogout = async () => {
+    try {
+      await api.auth.logout();
+      setIsLoggedIn(false);
+      setVisorState('eyes');
+      setView('landing');
+    } catch (err) {
+      console.error('Logout error:', err);
+    }
   };
 
   return (
@@ -126,22 +222,64 @@ function App() {
           </span>
         </div>
 
-        {/* Global HUD Stats */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '30px' }} className="font-mono">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-            <Activity size={12} color="var(--color-cyan)" className="pulse-cyan" />
-            GRID STATUS: <span style={{ color: 'var(--color-green)' }}>ONLINE</span>
+        {/* Global HUD Stats & Actions */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '30px' }} className="font-mono">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+              <Activity size={12} color="var(--color-cyan)" className="pulse-cyan" />
+              GRID STATUS: <span style={{ color: 'var(--color-green)' }}>ONLINE</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+              <ShieldCheck size={12} color="var(--color-purple)" />
+              VERIFIED_NODE
+            </div>
+            <button 
+              onClick={() => setAudioActive(!audioActive)}
+              style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', alignItems: 'center' }}
+            >
+              {audioActive ? <Volume2 size={16} /> : <VolumeX size={16} />}
+            </button>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-            <ShieldCheck size={12} color="var(--color-purple)" />
-            VERIFIED_NODE
-          </div>
-          <button 
-            onClick={() => setAudioActive(!audioActive)}
-            style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', alignItems: 'center' }}
-          >
-            {audioActive ? <Volume2 size={16} /> : <VolumeX size={16} />}
-          </button>
+
+          {isLoggedIn ? (
+            <div style={{ display: 'flex', gap: '10px' }}>
+              {view !== 'dashboard' && view !== 'whiteboard' && (
+                <button 
+                  className="cyber-button font-mono" 
+                  style={{ padding: '6px 12px', fontSize: '0.7rem', border: '1px solid rgba(0, 240, 255, 0.3)' }}
+                  onClick={() => setView('dashboard')}
+                >
+                  DASHBOARD
+                </button>
+              )}
+              {view !== 'profile' && (
+                <button 
+                  className="cyber-button font-mono" 
+                  style={{ padding: '6px 12px', fontSize: '0.7rem', border: '1px solid rgba(0, 240, 255, 0.3)' }}
+                  onClick={() => setView('profile')}
+                >
+                  PROFILE
+                </button>
+              )}
+              <button 
+                className="cyber-button purple font-mono" 
+                style={{ padding: '6px 12px', fontSize: '0.7rem', border: '1px solid rgba(189, 0, 255, 0.3)' }}
+                onClick={handleLogout}
+              >
+                LOG OUT
+              </button>
+            </div>
+          ) : (
+            view !== 'auth' && (
+              <button 
+                className="cyber-button font-mono" 
+                style={{ padding: '6px 12px', fontSize: '0.7rem', border: '1px solid rgba(0, 240, 255, 0.3)' }}
+                onClick={() => setView('auth')}
+              >
+                ENTER SYSTEM
+              </button>
+            )
+          )}
         </div>
       </header>
 
@@ -149,13 +287,11 @@ function App() {
       <main style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column' }}>
         
         {/* Render Three.js Mascot */}
-        {view === 'landing' && (
-          <RobotCanvas 
-            scrollProgress={scrollProgress} 
-            activeSection={view}
-            visorState={visorState}
-          />
-        )}
+        <RobotCanvas 
+          scrollProgress={scrollProgress} 
+          activeSection={view}
+          visorState={visorState}
+        />
 
         {/* Dynamic page contents */}
         {view === 'landing' && (
@@ -168,7 +304,7 @@ function App() {
 
         {view === 'auth' && (
           <AuthPage 
-            onAuthSuccess={() => setView('profile')}
+            onAuthSuccess={() => checkAuthAndSetView()}
             setVisorState={setVisorState}
           />
         )}

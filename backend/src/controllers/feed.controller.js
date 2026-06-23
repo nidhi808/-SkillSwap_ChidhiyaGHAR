@@ -49,7 +49,31 @@ const getTrendingSkills = async (req, res, next) => {
   } catch (err) { next(err) }
 }
 
+// ✅ POST /api/feed
+const createActivityPost = async (req, res, next) => {
+  try {
+    const { title, body } = req.body
+    if (!title) return res.status(400).json({ error: 'Title / Caption is required' })
+
+    const [activity] = await db.insert('activities', {
+      user_id: req.user.id,
+      actor_id: req.user.id,
+      type: 'post',
+      title,
+      body: body || '',
+      reference_type: 'post'
+    })
+
+    // Populate user profile info for local UI responsiveness
+    const profile = await db.selectOne('profiles', 'id, full_name, avatar_url', { id: req.user.id })
+    activity.user_profile = profile
+
+    return res.status(201).json({ data: activity })
+  } catch (err) { next(err) }
+}
+
 module.exports = {
   getActivityFeed,
-  getTrendingSkills
+  getTrendingSkills,
+  createActivityPost
 }

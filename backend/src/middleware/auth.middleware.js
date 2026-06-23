@@ -17,13 +17,15 @@ const verifyToken = async (req, res, next) => {
     console.log('Auth middleware - token:', token ? 'Present' : 'Missing')
     if (!token) return res.status(401).json({ error: 'Unauthorized', message: 'Authentication token missing.' })
 
-    const jwtSecret = (process.env.JWT_SECRET || '').replace(/^["']|["']$/g, '').trim()
-    const decoded = jwt.verify(token, jwtSecret)
+    const { data: { user: supabaseUser }, error: authError } = await supabaseAdmin.auth.getUser(token)
+    if (authError || !supabaseUser) {
+      return res.status(401).json({ error: 'Invalid or expired token.', details: authError?.message })
+    }
 
     const { data: user, error } = await supabaseAdmin
       .from('users')
       .select('*')
-      .eq('id', decoded.userId)
+      .eq('id', supabaseUser.id)
       .single()
 
     if (error || !user) return res.status(401).json({ error: 'Invalid or expired token.' })
@@ -61,8 +63,6 @@ const verifyToken = async (req, res, next) => {
 
     next()
   } catch (error) {
-    if (error.name === 'JsonWebTokenError') return res.status(401).json({ error: 'Invalid token.', details: error.message })
-    if (error.name === 'TokenExpiredError') return res.status(401).json({ error: 'Token expired.', expiredAt: error.expiredAt })
     return res.status(500).json({ error: 'Authentication failed.', details: error.message })
   }
 }
@@ -73,8 +73,10 @@ const optionalVerifyToken = async (req, res, next) => {
     const token = getAccessTokenFromRequest(req)
     if (!token) { req.user = null; return next() }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET)
-    const { data: user } = await supabaseAdmin.from('users').select('*').eq('id', decoded.userId).single()
+    const { data: { user: supabaseUser } } = await supabaseAdmin.auth.getUser(token)
+    if (!supabaseUser) { req.user = null; return next() }
+
+    const { data: user } = await supabaseAdmin.from('users').select('*').eq('id', supabaseUser.id).single()
 
     req.user = user ? {
       id: user.id,

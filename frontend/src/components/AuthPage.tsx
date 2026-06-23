@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, Lock, ShieldAlert, ArrowRight } from 'lucide-react';
+import { api } from '../services/api';
 
 interface AuthPageProps {
   onAuthSuccess: () => void;
@@ -14,49 +15,78 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, setVisorState
   const [password, setPassword] = useState('');
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
 
-    if (mode === 'login') {
-      if (!email || !password) {
-        setError('All fields are required.');
-        return;
+    try {
+      if (mode === 'login') {
+        if (!email || !password) {
+          setError('All fields are required.');
+          setLoading(false);
+          return;
+        }
+        await api.auth.login({ email, password });
+        setVisorState('success');
+        setTimeout(() => {
+          onAuthSuccess();
+        }, 800);
+      } else if (mode === 'signup') {
+        if (!email || !password) {
+          setError('All fields are required.');
+          setLoading(false);
+          return;
+        }
+        if (password.length < 6) {
+          setError('Password must be at least 6 characters.');
+          setLoading(false);
+          return;
+        }
+        // Sanitize username to conform to backend validation: 3-30 characters, alphanumeric/underscore only
+        let username = email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '_');
+        if (username.length < 3) {
+          username = username.padEnd(3, '0');
+        } else if (username.length > 30) {
+          username = username.substring(0, 30);
+        }
+        await api.auth.register({ email, password, username });
+        // Automatically log in the user immediately after successful registration
+        await api.auth.login({ email, password });
+        setVisorState('success');
+        setTimeout(() => {
+          onAuthSuccess();
+        }, 800);
+      } else if (mode === 'verify') {
+        if (!code) {
+          setError('Verification code is required.');
+          setLoading(false);
+          return;
+        }
+
+        // Submit the OTP code/token to verify email via native Supabase Auth
+        await api.auth.verifyEmail(email, code);
+
+        // Log user in automatically after registration
+        await api.auth.login({ email, password });
+        setVisorState('success');
+        setTimeout(() => {
+          onAuthSuccess();
+        }, 800);
       }
-      // Mock login success -> proceed directly if already verified, or verify
-      setVisorState('success');
-      setTimeout(() => {
-        onAuthSuccess();
-      }, 800);
-    } else if (mode === 'signup') {
-      if (!email || !password) {
-        setError('All fields are required.');
-        return;
-      }
-      if (password.length < 6) {
-        setError('Password must be at least 6 characters.');
-        return;
-      }
-      // Proceed to mock email verification screen
-      setMode('verify');
-    } else if (mode === 'verify') {
-      if (code.trim() !== '12345') {
-        setError('Invalid verification code. Enter "12345" for demonstration.');
-        return;
-      }
-      setVisorState('success');
-      setTimeout(() => {
-        onAuthSuccess();
-      }, 800);
+
+    } catch (err: any) {
+      setError(err.message || 'Authentication error.');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleOAuthMock = (_provider: string) => {
-    setVisorState('success');
-    setTimeout(() => {
-      onAuthSuccess();
-    }, 800);
+  const handleOAuthMock = (provider: string) => {
+    // Initiate OAuth flow by redirecting
+    window.location.href = `http://localhost:4000/api/auth/oauth/${provider.toLowerCase()}`;
   };
 
   return (
@@ -164,12 +194,17 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, setVisorState
           <button 
             type="submit" 
             className="cyber-button" 
-            style={{ width: '100%', justifyContent: 'center', marginBottom: '20px' }}
+            disabled={loading}
+            style={{ width: '100%', justifyContent: 'center', marginBottom: '20px', opacity: loading ? 0.6 : 1 }}
           >
-            {mode === 'login' && 'INITIALIZE SESSION'}
-            {mode === 'signup' && 'SEND VERIFICATION'}
-            {mode === 'verify' && 'CONFIRM AUTHENTICATION'}
-            <ArrowRight size={16} />
+            {loading ? 'TRANSMITTING...' : (
+              <>
+                {mode === 'login' && 'INITIALIZE SESSION'}
+                {mode === 'signup' && 'SEND VERIFICATION'}
+                {mode === 'verify' && 'CONFIRM AUTHENTICATION'}
+                <ArrowRight size={16} />
+              </>
+            )}
           </button>
         </form>
 

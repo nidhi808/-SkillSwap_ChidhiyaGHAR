@@ -1,6 +1,8 @@
 const rateLimit = require('express-rate-limit')
 
 const windowMs = parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000') // 15 min default
+const isDev = process.env.NODE_ENV !== 'production'
+const skipAll = () => true
 
 // ✅ Tier 1: Strict — auth endpoints (login, register, OTP, password reset)
 const strictLimiter = rateLimit({
@@ -9,7 +11,8 @@ const strictLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many requests', message: 'Rate limit exceeded. Please try again in 15 minutes.' },
-  skipSuccessfulRequests: false
+  skipSuccessfulRequests: false,
+  skip: skipAll
 })
 
 // ✅ Tier 2: Normal — standard API endpoints
@@ -18,7 +21,8 @@ const normalLimiter = rateLimit({
   max: 200,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: 'Too many requests', message: 'Rate limit exceeded. Please try again later.' }
+  message: { error: 'Too many requests', message: 'Rate limit exceeded. Please try again later.' },
+  skip: skipAll
 })
 
 // ✅ Tier 3: Relaxed — real-time / chat endpoints
@@ -27,7 +31,8 @@ const relaxedLimiter = rateLimit({
   max: 500,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: 'Too many requests', message: 'Too many real-time requests.' }
+  message: { error: 'Too many requests', message: 'Too many real-time requests.' },
+  skip: skipAll
 })
 
 // ✅ Tier 4: AI — expensive AI endpoints
@@ -36,7 +41,8 @@ const aiLimiter = rateLimit({
   max: 30,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: 'Too many AI requests', message: 'AI rate limit exceeded. Please wait 10 minutes.' }
+  message: { error: 'Too many AI requests', message: 'AI rate limit exceeded. Please wait 10 minutes.' },
+  skip: skipAll
 })
 
 // ✅ Tier 5: Dev — dev/testing
@@ -45,7 +51,8 @@ const devLimiter = rateLimit({
   max: 2000,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: 'Too many requests', message: 'Dev rate limit exceeded.' }
+  message: { error: 'Too many requests', message: 'Dev rate limit exceeded.' },
+  skip: skipAll
 })
 
 // ✅ Global fallback — applied at the app level
@@ -54,7 +61,8 @@ const globalLimiter = rateLimit({
   max: 1000,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: 'Too many requests', message: 'Global rate limit exceeded.' }
+  message: { error: 'Too many requests', message: 'Global rate limit exceeded.' },
+  skip: skipAll
 })
 
 // ✅ StrictDevLimiter — internal test endpoints
@@ -63,7 +71,8 @@ const StrictDevLimiter = rateLimit({
   max: 5,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: 'Too many requests', message: 'Strict dev rate limit exceeded.' }
+  message: { error: 'Too many requests', message: 'Strict dev rate limit exceeded.' },
+  skip: skipAll
 })
 
 module.exports = {

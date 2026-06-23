@@ -1,0 +1,28 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "src/server.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/health",
+      "dest": "src/server.js"
+    },
+    {
+      "src": "/metrics",
+      "dest": "src/server.js"
+    },
+    {
+      "src": "/api/(.*)",
+      "dest": "src/server.js"
+    },
+    {
+      "src": "/(.*)",
+      "status": 404,
+      "dest": "src/server.js"
+    }
+  ]
+}

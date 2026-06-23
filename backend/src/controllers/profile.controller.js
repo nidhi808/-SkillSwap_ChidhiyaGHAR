@@ -7,18 +7,56 @@ const logger = require('../utils/logger.js')
 // ✅ GET /api/profile/
 const getMyProfile = async (req, res, next) => {
   try {
-    const { data: profile } = await supabaseAdmin
-      .from('profiles')
+    let { data: user, error } = await supabaseAdmin
+      .from('users')
       .select(`
-        *,
-        users:id (id, email, username, role, is_email_verified, mfa_enabled, created_at),
+        id, email, username, role, is_email_verified, mfa_enabled, created_at,
+        profile:profiles (*),
         user_skills_offered (id, proficiency_level, years_experience, description, skills(id, name, slug, skill_categories(name))),
         user_skills_wanted (id, current_level, target_level, urgency, skills(id, name, slug))
       `)
       .eq('id', req.user.id)
       .single()
 
-    return res.status(200).json({ data: profile })
+    if (error) throw error
+
+    if (!user || !user.profile) {
+      // Auto-create profile if missing
+      await db.insert('profiles', { id: req.user.id }).catch(() => {})
+      
+      // Fetch again
+      const { data: updatedUser } = await supabaseAdmin
+        .from('users')
+        .select(`
+          id, email, username, role, is_email_verified, mfa_enabled, created_at,
+          profile:profiles (*),
+          user_skills_offered (id, proficiency_level, years_experience, description, skills(id, name, slug, skill_categories(name))),
+          user_skills_wanted (id, current_level, target_level, urgency, skills(id, name, slug))
+        `)
+        .eq('id', req.user.id)
+        .single()
+      if (updatedUser) {
+        user = updatedUser
+      }
+    }
+
+    // Assemble the composite object in the profiles-first shape expected by the frontend
+    const profileData = user ? {
+      ...(user.profile || {}),
+      users: {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        role: user.role,
+        is_email_verified: user.is_email_verified,
+        mfa_enabled: user.mfa_enabled,
+        created_at: user.created_at
+      },
+      user_skills_offered: user.user_skills_offered || [],
+      user_skills_wanted: user.user_skills_wanted || []
+    } : null
+
+    return res.status(200).json({ data: profileData })
   } catch (err) { next(err) }
 }
 
@@ -68,6 +106,14 @@ const updateProfile = async (req, res, next) => {
     // Check profile completeness
     const { data: currentProfile } = await supabaseAdmin.from('profiles').select('*').eq('id', req.user.id).single()
     const merged = { ...currentProfile, ...updates }
+    
+    if (!merged.avatar_url) {
+      const { data: user } = await supabaseAdmin.from('users').select('username').eq('id', req.user.id).single()
+      const seed = user?.username || req.user.id
+      updates.avatar_url = `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(seed)}`
+      merged.avatar_url = updates.avatar_url
+    }
+
     const isComplete = !!(merged.full_name && merged.bio && merged.avatar_url && merged.city)
     updates.is_profile_complete = isComplete
 

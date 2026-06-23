@@ -1,10 +1,11 @@
-const OpenAI = require('openai')
+const { GoogleGenerativeAI } = require('@google/generative-ai')
 const logger = require('../utils/logger.js')
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+const MODEL_NAME = 'gemini-1.5-flash' // Fast and accurate for structured text/JSON tasks
 
 /**
- * Generates an AI-powered personalized learning path/roadmap
+ * Generates an AI-powered personalized learning path/roadmap using Google Gemini
  */
 async function generateLearningPath(skillName, currentLevel, targetLevel) {
   try {
@@ -12,7 +13,7 @@ async function generateLearningPath(skillName, currentLevel, targetLevel) {
     Current level: ${currentLevel || 'Beginner'}
     Target level: ${targetLevel || 'Intermediate'}
 
-    Please format the response as a structured JSON object:
+    Please format the response as a structured JSON object matching this schema:
     {
       "title": "Learning path title",
       "description": "Overview of the path",
@@ -27,17 +28,15 @@ async function generateLearningPath(skillName, currentLevel, targetLevel) {
       ]
     }`
 
-    const completion = await openai.chat.completions.create({
-      model: process.env.OPENAI_MODEL || 'gpt-4o',
-      messages: [
-        { role: 'system', content: 'You are an EdTech learning path curator. You output ONLY valid JSON.' },
-        { role: 'user', content: prompt }
-      ],
-      temperature: 0.7,
-      response_format: { type: 'json_object' }
+    const model = genAI.getGenerativeModel({
+      model: MODEL_NAME,
+      generationConfig: { responseMimeType: 'application/json' }
     })
 
-    return JSON.parse(completion.choices[0].message.content)
+    const result = await model.generateContent(prompt)
+    const text = result.response.text()
+
+    return JSON.parse(text)
   } catch (err) {
     logger.error(`[AI LearningPath] generateLearningPath error: ${err.message}`)
     return {

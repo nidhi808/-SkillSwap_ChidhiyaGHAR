@@ -23,6 +23,12 @@ export const RobotCanvas: React.FC<RobotCanvasProps> = ({
   const visorCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const visorTextureRef = useRef<THREE.CanvasTexture | null>(null);
 
+  // Keep track of visorState in a ref to prevent recreating WebGL scene on change
+  const visorStateRef = useRef(visorState);
+  useEffect(() => {
+    visorStateRef.current = visorState;
+  }, [visorState]);
+
   // Track mouse coordinates for subtle head tracking
   const mouseRef = useRef({ x: 0, y: 0 });
 
@@ -342,7 +348,7 @@ export const RobotCanvas: React.FC<RobotCanvasProps> = ({
 
       // Visor Texture Update
       if (ctx && visorCanvasRef.current && visorTextureRef.current) {
-        drawVisorTexture(ctx, visorState, time);
+        drawVisorTexture(ctx, visorStateRef.current, time);
         visorTextureRef.current.needsUpdate = true;
       }
 
@@ -374,7 +380,7 @@ export const RobotCanvas: React.FC<RobotCanvasProps> = ({
       glowPinkMat.dispose();
       texture.dispose();
     };
-  }, [visorState]);
+  }, []);
 
   // Handle updates in props (Scroll Linked Rotations & Placement)
   useEffect(() => {

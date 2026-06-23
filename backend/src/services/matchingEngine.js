@@ -127,10 +127,14 @@ async function findTopMatches(userId, { limit = 20 } = {}) {
       .eq('id', userId)
       .single()
 
-    // Get all users except self, with profiles
+    // Get all users except self, with profiles and skills
     const { data: candidates } = await supabaseAdmin
       .from('profiles')
-      .select('id, full_name, avatar_url, avg_rating, total_sessions, reputation_points')
+      .select(`
+        id, full_name, avatar_url, avg_rating, total_sessions, reputation_points, location, city, state_code,
+        user_skills_offered(skills(name)),
+        user_skills_wanted(skills(name))
+      `)
       .neq('id', userId)
       .eq('is_profile_complete', true)
       .limit(200)
@@ -141,7 +145,13 @@ async function findTopMatches(userId, { limit = 20 } = {}) {
     const matchPromises = candidates.slice(0, 50).map(async (candidate) => {
       try {
         const scores = await computeMatchScore(userId, candidate.id)
-        return { userId: candidate.id, profile: candidate, ...scores }
+        return {
+          userId: candidate.id,
+          profile: candidate,
+          skillsOffered: candidate.user_skills_offered?.map(s => s.skills?.name).filter(Boolean) || [],
+          skillsWanted: candidate.user_skills_wanted?.map(s => s.skills?.name).filter(Boolean) || [],
+          ...scores
+        }
       } catch {
         return null
       }

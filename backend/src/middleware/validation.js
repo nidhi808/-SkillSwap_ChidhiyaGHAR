@@ -15,8 +15,7 @@ const handleValidationErrors = (req, res, next) => {
 // ✅ Auth validators
 const registerValidator = [
   body('email').isEmail().normalizeEmail().withMessage('Valid email required'),
-  body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters')
-    .matches(/^(?=.*[A-Z])(?=.*[0-9])/).withMessage('Password must contain uppercase letter and number'),
+  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
   body('username').optional().matches(/^[a-zA-Z0-9_]{3,30}$/).withMessage('Username must be 3-30 chars, letters/numbers/underscore only'),
   handleValidationErrors
 ]
