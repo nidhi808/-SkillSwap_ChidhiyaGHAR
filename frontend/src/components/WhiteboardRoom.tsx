@@ -1,10 +1,31 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Camera, CameraOff, Palette, Eraser, Trash2, LogOut, Send, MessageSquare } from 'lucide-react';
+import { Camera, CameraOff, Palette, Eraser, Trash2, LogOut, Send, MessageSquare, Mic, MicOff, Monitor, MonitorOff } from 'lucide-react';
+import { api } from '../services/api';
+import TRTC from 'trtc-sdk-v5';
+
+function stringToNumericId(str: string): number {
+  let hash = 0;
+  if (!str) return hash;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash;
+  }
+  return (Math.abs(hash) % 2147483647) + 1;
+}
+
 
 interface WhiteboardRoomProps {
   roomData: { tutor: string; student: string; skill: string };
   onClose: () => void;
   setVisorState: (state: 'eyes' | 'quote' | 'swap' | 'success' | 'camera') => void;
+}
+
+interface PathElement {
+  color: string;
+  penSize: number;
+  points: { x: number; y: number }[];
+  isEraser: boolean;
 }
 
 export const WhiteboardRoom: React.FC<WhiteboardRoomProps> = ({ roomData, onClose, setVisorState }) => {
@@ -14,11 +35,20 @@ export const WhiteboardRoom: React.FC<WhiteboardRoomProps> = ({ roomData, onClos
   const [color, setColor] = useState('#00f0ff');
   const [penSize, setPenSize] = useState(4);
   const [isEraser, setIsEraser] = useState(false);
+  const [elements, setElements] = useState<PathElement[]>([]);
+  const currentPathRef = useRef<PathElement | null>(null);
+
+  // Generate a unique session ID based on roomData names/skill
+  const sessionId = (roomData.tutor + '_' + roomData.student + '_' + roomData.skill)
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '_');
 
   // Video feed states
-  const videoRef = useRef<HTMLVideoElement | null>(null);
   const [cameraActive, setCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState(false);
+  const [audioActive, setAudioActive] = useState(true);
+  const [screenSharing, setScreenSharing] = useState(false);
+
 
   // Chat states
   const [messages, setMessages] = useState<{ sender: string; text: string; time: string }[]>([
@@ -32,28 +62,55 @@ export const WhiteboardRoom: React.FC<WhiteboardRoomProps> = ({ roomData, onClos
     setVisorState('camera');
   }, [setVisorState]);
 
-  // Setup canvas drawings
+  // Draw a path onto the canvas helper
+  const drawPath = (ctx: CanvasRenderingContext2D, path: PathElement) => {
+    if (path.points.length === 0) return;
+    ctx.beginPath();
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = path.isEraser ? '#0f0f13' : path.color;
+    ctx.lineWidth = path.isEraser ? 24 : path.penSize;
+
+    ctx.moveTo(path.points[0].x, path.points[0].y);
+    for (let i = 1; i < path.points.length; i++) {
+      ctx.lineTo(path.points[i].x, path.points[i].y);
+    }
+    ctx.stroke();
+    ctx.closePath();
+  };
+
+  // Setup canvas drawings and restore state
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    // Set canvas dimensions relative to CSS dimensions
     canvas.width = canvas.parentElement?.clientWidth || 800;
     canvas.height = canvas.parentElement?.clientHeight || 500;
 
     const context = canvas.getContext('2d');
     if (!context) return;
 
-    context.lineCap = 'round';
-    context.lineJoin = 'round';
-    context.strokeStyle = color;
-    context.lineWidth = penSize;
     contextRef.current = context;
-
-    // Fill canvas background
     context.fillStyle = '#0f0f13';
     context.fillRect(0, 0, canvas.width, canvas.height);
-  }, []);
+
+    // Fetch and draw saved whiteboard state
+    const loadWhiteboardState = async () => {
+      try {
+        const res = await api.whiteboard.getState(sessionId);
+        if (res.data && res.data.elements) {
+          const loadedElements = res.data.elements || [];
+          setElements(loadedElements);
+          loadedElements.forEach((path: PathElement) => {
+            drawPath(context, path);
+          });
+        }
+      } catch (err) {
+        console.error('Failed to load whiteboard state:', err);
+      }
+    };
+    loadWhiteboardState();
+  }, [sessionId]);
 
   // Update stroke values on color/pen size change
   useEffect(() => {
@@ -63,31 +120,159 @@ export const WhiteboardRoom: React.FC<WhiteboardRoomProps> = ({ roomData, onClos
     }
   }, [color, penSize, isEraser]);
 
-  // Web camera activation
-  useEffect(() => {
-    let stream: MediaStream | null = null;
+  // Web camera activation and TRTC video room setup
+  const trtcRef = useRef<any>(null);
+  const [peerVideoActive, setPeerVideoActive] = useState(false);
 
-    const startCamera = async () => {
+  useEffect(() => {
+    const initTRTC = async () => {
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 } });
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          setCameraActive(true);
-        }
+        // 1. Get credentials from backend
+        const res = await api.video.getTrtcSig();
+        const { sdkAppId, userSig, userId } = res.data;
+
+        // 2. Create the TRTC instance
+        const trtc = TRTC.create();
+        trtcRef.current = trtc;
+
+
+        // 3. Set up event listeners BEFORE entering room
+        trtc.on(TRTC.EVENT.REMOTE_VIDEO_AVAILABLE, (event: any) => {
+          const { userId: remoteUserId, streamType } = event;
+          console.log(`[TRTC] Remote video available from ${remoteUserId}`);
+          setPeerVideoActive(true);
+
+          // Render remote video
+          setTimeout(() => {
+            trtc.startRemoteVideo({
+              userId: remoteUserId,
+              streamType,
+              view: 'peer-video-view'
+            }).catch((err: any) => {
+              console.error('[TRTC] Failed to start remote video:', err);
+            });
+          }, 200); // Small timeout to ensure DOM has rendered container
+        });
+
+        trtc.on(TRTC.EVENT.REMOTE_VIDEO_UNAVAILABLE, (event: any) => {
+          const { userId: remoteUserId, streamType } = event;
+          console.log(`[TRTC] Remote video unavailable from ${remoteUserId}`);
+          trtc.stopRemoteVideo({ userId: remoteUserId, streamType });
+          setPeerVideoActive(false);
+        });
+
+        trtc.on(TRTC.EVENT.REMOTE_AUDIO_AVAILABLE, (event: any) => {
+          const { userId: remoteUserId } = event;
+          console.log(`[TRTC] Remote audio available from ${remoteUserId}`);
+          // Play remote audio (SDK handles rendering/playing auto)
+        });
+
+        // 4. Enter room
+        // Hash sessionId to a numeric room ID to ensure default namespace works
+        const numericRoomId = stringToNumericId(sessionId);
+        const cleanUserId = userId.replace(/-/g, '');
+
+        await trtc.enterRoom({
+          sdkAppId,
+          userId: cleanUserId,
+          userSig,
+          roomId: numericRoomId
+        });
+        console.log(`[TRTC] Joined room ${numericRoomId} as ${cleanUserId}`);
+
+        // 5. Start publishing local feeds
+        await trtc.startLocalVideo({ view: 'local-video-view' });
+        await trtc.startLocalAudio();
+        setCameraActive(true);
+
       } catch (err) {
-        console.warn('Camera failed to start:', err);
+        console.error('[TRTC] Initialization error:', err);
         setCameraError(true);
       }
     };
 
-    startCamera();
+    initTRTC();
 
     return () => {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
+      const trtc = trtcRef.current;
+      if (trtc) {
+        console.log('[TRTC] Cleaning up and leaving room');
+        trtc.exitRoom()
+          .then(() => {
+            trtc.stopLocalVideo();
+            trtc.stopLocalAudio();
+          })
+          .catch((err: any) => {
+            console.error('[TRTC] Cleanup error:', err);
+          });
       }
     };
-  }, []);
+  }, [sessionId]);
+
+  const toggleCamera = async () => {
+    const trtc = trtcRef.current;
+    if (!trtc) return;
+    try {
+      if (cameraActive) {
+        await trtc.stopLocalVideo();
+        setCameraActive(false);
+      } else {
+        await trtc.startLocalVideo({ view: 'local-video-view' });
+        setCameraActive(true);
+      }
+    } catch (err) {
+      console.error('[TRTC] Failed to toggle video:', err);
+    }
+  };
+
+  const toggleAudio = async () => {
+    const trtc = trtcRef.current;
+    if (!trtc) return;
+    try {
+      if (audioActive) {
+        await trtc.updateLocalAudio({ mute: true }).catch(async () => {
+          await trtc.stopLocalAudio();
+        });
+        setAudioActive(false);
+      } else {
+        await trtc.updateLocalAudio({ mute: false }).catch(async () => {
+          await trtc.startLocalAudio();
+        });
+        setAudioActive(true);
+      }
+    } catch (err) {
+      console.error('[TRTC] Failed to toggle audio:', err);
+    }
+  };
+
+  const toggleScreenShare = async () => {
+    const trtc = trtcRef.current;
+    if (!trtc) return;
+    try {
+      if (screenSharing) {
+        await trtc.stopScreenShare();
+        setScreenSharing(false);
+        await trtc.startLocalVideo({ view: 'local-video-view' });
+        setCameraActive(true);
+      } else {
+        if (cameraActive) {
+          await trtc.stopLocalVideo();
+        }
+        await trtc.startScreenShare({ view: 'local-video-view' });
+        setScreenSharing(true);
+        setCameraActive(true);
+      }
+    } catch (err) {
+      console.error('[TRTC] Failed to toggle screen share:', err);
+      try {
+        await trtc.startLocalVideo({ view: 'local-video-view' });
+        setCameraActive(true);
+        setScreenSharing(false);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  };
 
   // Scroll chat to bottom
   useEffect(() => {
@@ -101,28 +286,57 @@ export const WhiteboardRoom: React.FC<WhiteboardRoomProps> = ({ roomData, onClos
       contextRef.current.beginPath();
       contextRef.current.moveTo(offsetX, offsetY);
       setIsDrawing(true);
+
+      currentPathRef.current = {
+        color,
+        penSize,
+        points: [{ x: offsetX, y: offsetY }],
+        isEraser
+      };
     }
   };
 
   const draw = ({ nativeEvent }: React.MouseEvent) => {
-    if (!isDrawing || !contextRef.current) return;
+    if (!isDrawing || !contextRef.current || !currentPathRef.current) return;
     const { offsetX, offsetY } = nativeEvent;
     contextRef.current.lineTo(offsetX, offsetY);
     contextRef.current.stroke();
+
+    currentPathRef.current.points.push({ x: offsetX, y: offsetY });
   };
 
-  const stopDrawing = () => {
+  const stopDrawing = async () => {
     if (contextRef.current) {
       contextRef.current.closePath();
     }
     setIsDrawing(false);
+
+    if (currentPathRef.current) {
+      const updatedElements = [...elements, currentPathRef.current];
+      setElements(updatedElements);
+      currentPathRef.current = null;
+
+      // Save state to backend
+      try {
+        await api.whiteboard.saveState(sessionId, updatedElements);
+      } catch (err) {
+        console.error('Failed to save whiteboard state:', err);
+      }
+    }
   };
 
-  const clearCanvas = () => {
+  const clearCanvas = async () => {
     const canvas = canvasRef.current;
     if (canvas && contextRef.current) {
       contextRef.current.fillStyle = '#0f0f13';
       contextRef.current.fillRect(0, 0, canvas.width, canvas.height);
+      setElements([]);
+
+      try {
+        await api.whiteboard.saveState(sessionId, []);
+      } catch (err) {
+        console.error('Failed to clear whiteboard state in backend:', err);
+      }
     }
   };
 
@@ -292,62 +506,98 @@ export const WhiteboardRoom: React.FC<WhiteboardRoomProps> = ({ roomData, onClos
               
               {/* Active User Webcam */}
               <div style={{ background: '#070709', border: '1px solid rgba(0, 240, 255, 0.15)', borderRadius: '6px', position: 'relative', overflow: 'hidden', height: '140px' }}>
-                {cameraActive ? (
-                  <video 
-                    ref={videoRef} 
-                    autoPlay 
-                    playsInline 
-                    muted 
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+                  <div 
+                    id="local-video-view" 
+                    style={{ width: '100%', height: '100%', display: cameraActive ? 'block' : 'none' }} 
                   />
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: '8px' }}>
-                    {cameraError ? (
-                      <>
-                        <CameraOff size={24} color="#ff4d4d" />
-                        <span className="font-mono" style={{ fontSize: '0.7rem', color: '#ff4d4d' }}>CAM_ACCESS_DENIED</span>
-                      </>
-                    ) : (
-                      <>
-                        <div className="pulse-cyan" style={{ border: '2px solid var(--color-cyan)', borderRadius: '50%', padding: '10px' }}>
-                          <Camera size={20} color="var(--color-cyan)" />
-                        </div>
-                        <span className="font-mono" style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>INITIALIZING WEBCAM...</span>
-                      </>
-                    )}
-                  </div>
-                )}
-                <span className="font-mono" style={{ position: 'absolute', bottom: '6px', left: '8px', fontSize: '0.65rem', background: 'rgba(0,0,0,0.5)', padding: '2px 6px', borderRadius: '3px', color: 'var(--color-cyan)' }}>
+                  {!cameraActive && (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: '8px' }}>
+                      {cameraError ? (
+                        <>
+                          <CameraOff size={24} color="#ff4d4d" />
+                          <span className="font-mono" style={{ fontSize: '0.7rem', color: '#ff4d4d' }}>CAM_ACCESS_DENIED</span>
+                        </>
+                      ) : (
+                        <>
+                          <div className="pulse-cyan" style={{ border: '2px solid var(--color-cyan)', borderRadius: '50%', padding: '10px' }}>
+                            <Camera size={20} color="var(--color-cyan)" />
+                          </div>
+                          <span className="font-mono" style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>INITIALIZING WEBCAM...</span>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <span className="font-mono" style={{ position: 'absolute', bottom: '6px', left: '8px', fontSize: '0.65rem', background: 'rgba(0,0,0,0.5)', padding: '2px 6px', borderRadius: '3px', color: 'var(--color-cyan)', zIndex: 10 }}>
                   {roomData.student} (You)
                 </span>
               </div>
 
-              {/* Mock Peer Webcam */}
+              {/* Peer Webcam */}
               <div style={{ background: '#070709', border: '1px solid rgba(189, 0, 255, 0.15)', borderRadius: '6px', position: 'relative', overflow: 'hidden', height: '140px' }}>
-                {/* Simulated digital scanning video */}
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: '8px', position: 'relative' }}>
-                  <span style={{ fontSize: '3rem' }}>👨‍💻</span>
+                <div style={{ width: '100%', height: '100%', position: 'relative' }}>
                   <div 
-                    style={{ 
-                      position: 'absolute', 
-                      top: 0, left: 0, right: 0, 
-                      height: '2px', 
-                      background: 'rgba(189, 0, 255, 0.6)', 
-                      boxShadow: '0 0 8px var(--color-purple)', 
-                      animation: 'scanlines 2s infinite linear' 
-                    }} 
+                    id="peer-video-view" 
+                    style={{ width: '100%', height: '100%', display: peerVideoActive ? 'block' : 'none' }} 
                   />
-                  <span className="font-mono pulse-cyan" style={{ fontSize: '0.7rem', color: 'var(--color-purple)' }}>
-                    FEED_CONNECTED_SECURE
-                  </span>
+                  {!peerVideoActive && (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: '8px', position: 'relative' }}>
+                      <span style={{ fontSize: '3rem' }}>👨‍💻</span>
+                      <div 
+                        style={{ 
+                          position: 'absolute', 
+                          top: 0, left: 0, right: 0, 
+                          height: '2px', 
+                          background: 'rgba(189, 0, 255, 0.6)', 
+                          boxShadow: '0 0 8px var(--color-purple)', 
+                          animation: 'scanlines 2s infinite linear' 
+                        }} 
+                      />
+                      <span className="font-mono pulse-cyan" style={{ fontSize: '0.7rem', color: 'var(--color-purple)' }}>
+                        AWAITING PEER VIDEO...
+                      </span>
+                    </div>
+                  )}
                 </div>
-                
-                <span className="font-mono" style={{ position: 'absolute', bottom: '6px', left: '8px', fontSize: '0.65rem', background: 'rgba(0,0,0,0.5)', padding: '2px 6px', borderRadius: '3px', color: 'var(--color-purple)' }}>
+                <span className="font-mono" style={{ position: 'absolute', bottom: '6px', left: '8px', fontSize: '0.65rem', background: 'rgba(0,0,0,0.5)', padding: '2px 6px', borderRadius: '3px', color: 'var(--color-purple)', zIndex: 10 }}>
                   {roomData.tutor} (Tutor)
                 </span>
               </div>
 
             </div>
+
+            {/* Call Control Options */}
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', borderTop: '1px solid rgba(255, 255, 255, 0.05)', paddingTop: '12px' }}>
+              <button 
+                onClick={toggleCamera} 
+                className={`cyber-button ${cameraActive ? '' : 'purple'}`} 
+                style={{ padding: '8px 12px', fontSize: '0.75rem', justifyContent: 'center', gap: '6px', flex: 1 }}
+                title={cameraActive ? 'Turn Camera Off' : 'Turn Camera On'}
+              >
+                {cameraActive ? <Camera size={14} color="var(--color-cyan)" /> : <CameraOff size={14} color="var(--color-purple)" />}
+                <span className="font-mono" style={{ fontSize: '0.65rem' }}>CAM</span>
+              </button>
+              <button 
+                onClick={toggleAudio} 
+                className={`cyber-button ${audioActive ? '' : 'purple'}`} 
+                style={{ padding: '8px 12px', fontSize: '0.75rem', justifyContent: 'center', gap: '6px', flex: 1 }}
+                title={audioActive ? 'Mute Mic' : 'Unmute Mic'}
+              >
+                {audioActive ? <Mic size={14} color="var(--color-cyan)" /> : <MicOff size={14} color="var(--color-purple)" />}
+                <span className="font-mono" style={{ fontSize: '0.65rem' }}>MIC</span>
+              </button>
+              <button 
+                onClick={toggleScreenShare} 
+                className={`cyber-button ${screenSharing ? '' : 'purple'}`} 
+                style={{ padding: '8px 12px', fontSize: '0.75rem', justifyContent: 'center', gap: '6px', flex: 2 }}
+                title={screenSharing ? 'Stop Screen Share' : 'Start Screen Share'}
+              >
+                {screenSharing ? <MonitorOff size={14} color="var(--color-cyan)" /> : <Monitor size={14} color="var(--color-purple)" />}
+                <span className="font-mono" style={{ fontSize: '0.65rem' }}>SCREEN SHARE</span>
+              </button>
+            </div>
+
           </div>
 
           {/* CHAT LOG VIEW */}

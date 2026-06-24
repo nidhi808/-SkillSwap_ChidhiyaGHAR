@@ -5,7 +5,8 @@ import { AuthPage } from './components/AuthPage';
 import { ProfileBuilder } from './components/ProfileBuilder';
 import { Dashboard } from './components/Dashboard';
 import { WhiteboardRoom } from './components/WhiteboardRoom';
-import { Volume2, VolumeX, Activity } from 'lucide-react';
+import { Volume2, VolumeX, Activity, ShieldCheck } from 'lucide-react';
+import { api } from './services/api';
 
 type AppView = 'landing' | 'auth' | 'profile' | 'dashboard' | 'whiteboard';
 
@@ -21,6 +22,7 @@ interface UserProfile {
 
 function App() {
   const [view, setView] = useState<AppView>('landing');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [audioActive, setAudioActive] = useState(false);
   const cursorRef = useRef<HTMLDivElement | null>(null);
@@ -30,13 +32,13 @@ function App() {
 
   // Onboarded Profile
   const [userProfile, setUserProfile] = useState<UserProfile>({
-    name: 'Nidhi Vekhande',
+    name: '',
     age: 20,
-    college: 'IIT Delhi',
-    branch: 'Computer Science',
-    course: 'B.Tech',
-    teachingSkills: ['Python', 'React'],
-    learningSkills: ['C Language', 'UI/UX Design'],
+    college: '',
+    branch: '',
+    course: '',
+    teachingSkills: [],
+    learningSkills: [],
   });
 
   // Whiteboard meet details
@@ -45,17 +47,16 @@ function App() {
   // Announcement banner dismissal
   const [bannerVisible, setBannerVisible] = useState(true);
 
-  // Monitor natural vertical scrolling progress
+  // Monitor page scrolling for mascot tracking & natural vertical scrolling progress
   useEffect(() => {
-    if (view !== 'landing') {
-      setScrollProgress(0);
-      return;
-    }
-
     const handleScroll = () => {
+      const scrollTop = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
       const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
-      if (scrollHeight <= 0) return;
-      const progress = window.scrollY / scrollHeight;
+      if (scrollHeight <= 0) {
+        setScrollProgress(0);
+        return;
+      }
+      const progress = scrollTop / scrollHeight;
       setScrollProgress(Math.min(1.0, Math.max(0, progress)));
     };
 
@@ -78,6 +79,88 @@ function App() {
     return () => window.removeEventListener('mousemove', moveCursor);
   }, []);
 
+  const checkAuthAndSetView = async () => {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      setIsLoggedIn(false);
+      return;
+    }
+
+    try {
+      console.log('[Session Check] Fetching profile from backend...');
+      const res = await api.profile.getMyProfile();
+      console.log('[Session Check] Profile response received:', res);
+      if (res.data) {
+        const prof = res.data;
+        const teaching = prof.user_skills_offered?.map((s: any) => s.skills?.name).filter(Boolean) || [];
+        const learning = prof.user_skills_wanted?.map((s: any) => s.skills?.name).filter(Boolean) || [];
+        
+        setUserProfile({
+          name: prof.full_name || prof.users?.username || 'Cyber Node',
+          age: 20,
+          college: prof.location || 'Grid Network',
+          branch: prof.city || 'General Engineering',
+          course: prof.state_code || 'B.Tech',
+          teachingSkills: teaching.length ? teaching : ['Python', 'React'],
+          learningSkills: learning.length ? learning : ['C Language', 'UI/UX Design'],
+        });
+
+        setIsLoggedIn(true);
+
+        const isComplete = prof.is_profile_complete || !!(prof.full_name && prof.location && prof.city);
+        console.log('[Session Check] Profile complete:', isComplete, 'Routing to:', isComplete ? 'dashboard' : 'profile');
+
+        if (isComplete) {
+          setView('dashboard');
+        } else {
+          setView('profile');
+        }
+      } else {
+        console.warn('[Session Check] Profile data is null, redirecting to landing...');
+        localStorage.removeItem('access_token');
+        setIsLoggedIn(false);
+        setView('landing');
+      }
+    } catch (err: any) {
+      console.error('[Session Check] Failed to retrieve user profile:', err);
+      localStorage.removeItem('access_token');
+      setIsLoggedIn(false);
+      setView('landing');
+    }
+  };
+
+  // Handle Supabase Auth Redirect hashes (e.g. email confirmation redirect)
+  useEffect(() => {
+    const handleHashAuth = async () => {
+      const hash = window.location.hash;
+      if (!hash) {
+        // Normal mount flow
+        checkAuthAndSetView();
+        return;
+      }
+
+      const params = new URLSearchParams(hash.substring(1));
+      const accessToken = params.get('access_token');
+      const refreshToken = params.get('refresh_token');
+
+      if (accessToken) {
+        console.log('[Auth Callback] Detected access token in URL hash');
+        localStorage.setItem('access_token', accessToken);
+        if (refreshToken) {
+          localStorage.setItem('refresh_token', refreshToken);
+        }
+        
+        // Clear the hash from address bar for clean URL
+        window.history.replaceState(null, '', window.location.pathname);
+
+        checkAuthAndSetView();
+        setVisorState('success');
+      }
+    };
+
+    handleHashAuth();
+  }, []);
+
   const handleEnterRoom = (roomData: { tutor: string; student: string; skill: string }) => {
     setActiveRoom(roomData);
     setView('whiteboard');
@@ -97,6 +180,17 @@ function App() {
       }, 100);
     } else {
       document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await api.auth.logout();
+      setIsLoggedIn(false);
+      setVisorState('eyes');
+      setView('landing');
+    } catch (err) {
+      console.error('Logout error:', err);
     }
   };
 
@@ -211,18 +305,55 @@ function App() {
           ))}
         </nav>
 
-        {/* Right: HUD status + pill LAUNCH DAPP + audio */}
+        {/* Right: HUD status + buttons + audio */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '18px', padding: '0 24px' }}>
-          <div className="font-mono" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.68rem', color: 'rgba(255,255,255,0.35)' }}>
-            <Activity size={10} color="var(--color-cyan)" className="pulse-cyan" />
-            GRID: <span style={{ color: 'var(--color-green)' }}>ONLINE</span>
+          <div className="font-mono" style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.68rem', color: 'rgba(255,255,255,0.35)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Activity size={10} color="var(--color-cyan)" className="pulse-cyan" />
+              GRID: <span style={{ color: 'var(--color-green)' }}>ONLINE</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <ShieldCheck size={10} color="var(--color-purple)" />
+              NODE: <span style={{ color: 'var(--color-purple)' }}>VERIFIED</span>
+            </div>
           </div>
 
-          {/* ChainGPT pill button — rainbow gradient animated border */}
-          <button className="launch-dapp-btn" onClick={() => setView('auth')}>
-            <span style={{ fontSize: '0.5rem', letterSpacing: '0.05em', opacity: 0.7 }}>••</span>
-            LAUNCH DAPP
-          </button>
+          {isLoggedIn ? (
+            <div style={{ display: 'flex', gap: '10px' }}>
+              {view !== 'dashboard' && view !== 'whiteboard' && (
+                <button 
+                  className="cyber-button font-mono" 
+                  style={{ padding: '6px 12px', fontSize: '0.7rem', border: '1px solid rgba(0, 240, 255, 0.3)' }}
+                  onClick={() => setView('dashboard')}
+                >
+                  DASHBOARD
+                </button>
+              )}
+              {view !== 'profile' && (
+                <button 
+                  className="cyber-button font-mono" 
+                  style={{ padding: '6px 12px', fontSize: '0.7rem', border: '1px solid rgba(0, 240, 255, 0.3)' }}
+                  onClick={() => setView('profile')}
+                >
+                  PROFILE
+                </button>
+              )}
+              <button 
+                className="cyber-button purple font-mono" 
+                style={{ padding: '6px 12px', fontSize: '0.7rem', border: '1px solid rgba(189, 0, 255, 0.3)' }}
+                onClick={handleLogout}
+              >
+                LOG OUT
+              </button>
+            </div>
+          ) : (
+            view !== 'auth' && (
+              <button className="launch-dapp-btn" onClick={() => setView('auth')}>
+                <span style={{ fontSize: '0.5rem', letterSpacing: '0.05em', opacity: 0.7 }}>••</span>
+                LAUNCH DAPP
+              </button>
+            )
+          )}
 
           <button
             onClick={() => setAudioActive(!audioActive)}
@@ -242,13 +373,11 @@ function App() {
       <main style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column' }}>
         
         {/* Render Three.js Mascot */}
-        {view === 'landing' && (
-          <RobotCanvas 
-            scrollProgress={scrollProgress} 
-            activeSection={view}
-            visorState={visorState}
-          />
-        )}
+        <RobotCanvas 
+          scrollProgress={scrollProgress} 
+          activeSection={view}
+          visorState={visorState}
+        />
 
         {/* Dynamic page contents */}
         {view === 'landing' && (
@@ -261,7 +390,7 @@ function App() {
 
         {view === 'auth' && (
           <AuthPage 
-            onAuthSuccess={() => setView('profile')}
+            onAuthSuccess={() => checkAuthAndSetView()}
             setVisorState={setVisorState}
           />
         )}

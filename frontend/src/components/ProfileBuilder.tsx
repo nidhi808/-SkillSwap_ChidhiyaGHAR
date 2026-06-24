@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowRight, ArrowLeft, Check } from 'lucide-react';
+import { api } from '../services/api';
 
 interface ProfileBuilderProps {
   onComplete: (data: {
@@ -30,6 +31,21 @@ export const ProfileBuilder: React.FC<ProfileBuilderProps> = ({ onComplete, setV
   
   const [teachingSkills, setTeachingSkills] = useState<string[]>([]);
   const [learningSkills, setLearningSkills] = useState<string[]>([]);
+  
+  const [dbSkills, setDbSkills] = useState<any[]>([]);
+
+  // Fetch skills on mount
+  useEffect(() => {
+    const fetchSkills = async () => {
+      try {
+        const res = await api.skills.getAll();
+        setDbSkills(res.data || []);
+      } catch (err) {
+        console.error('Failed to fetch skills from database:', err);
+      }
+    };
+    fetchSkills();
+  }, []);
 
   const handleNextStep = () => {
     if (!name || !college || !branch || !course) {
@@ -49,7 +65,6 @@ export const ProfileBuilder: React.FC<ProfileBuilderProps> = ({ onComplete, setV
     if (teachingSkills.includes(skill)) {
       setTeachingSkills(teachingSkills.filter(s => s !== skill));
     } else {
-      // Don't allow learning and teaching the same skill
       setTeachingSkills([...teachingSkills.filter(s => s !== skill), skill]);
       setLearningSkills(learningSkills.filter(s => s !== skill));
     }
@@ -59,29 +74,80 @@ export const ProfileBuilder: React.FC<ProfileBuilderProps> = ({ onComplete, setV
     if (learningSkills.includes(skill)) {
       setLearningSkills(learningSkills.filter(s => s !== skill));
     } else {
-      // Don't allow learning and teaching the same skill
       setLearningSkills([...learningSkills.filter(s => s !== skill), skill]);
       setTeachingSkills(teachingSkills.filter(s => s !== skill));
     }
   };
 
-  const handleFinish = () => {
+  const handleFinish = async () => {
     if (teachingSkills.length === 0 || learningSkills.length === 0) {
       alert('Please select at least one skill to teach and one skill to learn.');
       return;
     }
-    setVisorState('success');
-    setTimeout(() => {
-      onComplete({
-        name,
-        age,
-        college,
-        branch,
-        course,
-        teachingSkills,
-        learningSkills,
+
+    try {
+      // 1. Update Profile in Backend
+      await api.profile.updateProfile({
+        full_name: name,
+        location: college,
+        city: branch,
+        state_code: course,
+        country_code: 'IN',
+        bio: `I am studying ${course} in ${branch} at ${college}.`
       });
-    }, 800);
+
+      // 2. Associate Offered and Wanted Skills
+      // Helper to find skill ID in DB by name overlap
+      const getSkillId = (name: string) => {
+        const match = dbSkills.find(
+          s => s.name.toLowerCase().includes(name.toLowerCase()) || 
+               name.toLowerCase().includes(s.name.toLowerCase())
+        );
+        return match ? match.id : dbSkills[0]?.id; // Fallback to first skill if no match
+      };
+
+      // Insert offered skills
+      for (const skillName of teachingSkills) {
+        const id = getSkillId(skillName);
+        if (id) {
+          await api.skills.addOffered({
+            skill_id: id,
+            proficiency_level: 'intermediate',
+            years_experience: 1.0,
+            description: `I teach ${skillName}.`
+          }).catch(err => console.warn(err));
+        }
+      }
+
+      // Insert wanted skills
+      for (const skillName of learningSkills) {
+        const id = getSkillId(skillName);
+        if (id) {
+          await api.skills.addWanted({
+            skill_id: id,
+            current_level: 'beginner',
+            target_level: 'intermediate',
+            urgency: 'medium',
+            notes: `I want to learn ${skillName}.`
+          }).catch(err => console.warn(err));
+        }
+      }
+
+      setVisorState('success');
+      setTimeout(() => {
+        onComplete({
+          name,
+          age,
+          college,
+          branch,
+          course,
+          teachingSkills,
+          learningSkills,
+        });
+      }, 800);
+    } catch (err: any) {
+      alert(`Profile compilation error: ${err.message}`);
+    }
   };
 
   return (

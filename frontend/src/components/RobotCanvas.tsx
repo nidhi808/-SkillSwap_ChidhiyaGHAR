@@ -1115,7 +1115,7 @@ export const RobotCanvas: React.FC<RobotCanvasProps> = ({
 
       // 8. DYNAMIC VISOR TEXTURE UPDATING
       if (ctx && visorCanvasRef.current && visorTextureRef.current) {
-        drawVisorTexture(ctx, visorState, time);
+        drawVisorTexture(ctx, visorStateRef.current, time);
         visorTextureRef.current.needsUpdate = true;
       }
 
@@ -1174,6 +1174,7 @@ export const RobotCanvas: React.FC<RobotCanvasProps> = ({
       rainbowTexture.dispose();
     };
   }, []);
+
 
   return (
     <div 
