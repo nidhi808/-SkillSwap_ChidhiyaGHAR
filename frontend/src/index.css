@@ -1,20 +1,47 @@
 :root {
-  --bg-dark: #070709;
-  --bg-panel: rgba(13, 13, 17, 0.6);
-  --text-primary: #e2e8f0;
-  --text-muted: #8a99ad;
+  --bg-dark: #000000;
+  --bg-panel: rgba(10, 10, 12, 0.55);
+  --text-primary: #f1f5f9;
+  --text-muted: #94a3b8;
   --color-cyan: #00f0ff;
   --color-purple: #bd00ff;
-  --color-green: #39ff14;
+  --color-green: #28efce;
+  --color-orange: #fb7a52;
   --border-glow: rgba(0, 240, 255, 0.15);
   --border-glow-purple: rgba(189, 0, 255, 0.15);
-  --grid-line: rgba(255, 255, 255, 0.03);
+  --grid-line: rgba(255, 255, 255, 0.015);
   
-  --font-sans: 'Outfit', sans-serif;
-  --font-mono: 'Space Mono', monospace;
+  --font-sans: 'Outfit', 'Inter', sans-serif;
+  --font-mono: 'Space Mono', 'Roboto Mono', monospace;
 
   font-family: var(--font-sans);
   color-scheme: dark;
+}
+
+/* =====================================================
+   ChainGPT-Style Rainbow Animations
+   ===================================================== */
+@keyframes rainbowShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes hudPromptFade {
+  0%   { opacity: 0; transform: translateY(8px); }
+  15%  { opacity: 1; transform: translateY(0); }
+  80%  { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-6px); }
+}
+
+@keyframes scrollBounce {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(6px); }
+}
+
+@keyframes marqueeTicker {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
 }
 
 * {
@@ -43,7 +70,7 @@ body::before {
   background-image: 
     linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
     linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
-  background-size: 40px 40px;
+  background-size: 50px 50px;
   background-position: center center;
   z-index: 1;
   pointer-events: none;
@@ -56,7 +83,7 @@ body::after {
   left: 0;
   right: 0;
   bottom: 0;
-  background: radial-gradient(circle at center, transparent 30%, rgba(7, 7, 9, 0.9) 80%);
+  background: radial-gradient(circle at center, transparent 35%, rgba(0, 0, 0, 0.95) 85%);
   z-index: 2;
   pointer-events: none;
 }
@@ -76,7 +103,7 @@ body::after {
   left: 0;
   right: 0;
   bottom: 0;
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.02);
   margin: 20px;
   pointer-events: none;
   z-index: 100;
@@ -122,46 +149,207 @@ h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-mono);
 }
 
-/* Glassmorphism Cyber Card */
+/* Background Radial Glow Backdrops */
+.radial-glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  pointer-events: none;
+  opacity: 0.15;
+  mix-blend-mode: screen;
+  z-index: 0;
+}
+.radial-glow.cyan {
+  background: radial-gradient(circle, var(--color-cyan) 0%, transparent 70%);
+  width: 600px;
+  height: 600px;
+}
+.radial-glow.purple {
+  background: radial-gradient(circle, var(--color-purple) 0%, transparent 70%);
+  width: 600px;
+  height: 600px;
+}
+.radial-glow.green {
+  background: radial-gradient(circle, var(--color-green) 0%, transparent 70%);
+  width: 500px;
+  height: 500px;
+}
+
+/* Glassmorphism Cyber Card with Gradient Border on Hover */
 .glass-panel {
   background: var(--bg-panel);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
-  overflow: hidden;
+  z-index: 5;
+}
+
+.gradient-border-card {
+  position: relative;
+  background: var(--bg-panel);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 5;
+}
+
+.gradient-border-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  border-radius: 12px;
+  padding: 1px;
+  background: linear-gradient(135deg, var(--color-cyan) 0%, var(--color-purple) 50%, var(--color-green) 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: -1;
+}
+
+.gradient-border-card:hover::before {
+  opacity: 1;
+}
+
+.gradient-border-card:hover {
+  transform: translateY(-4px);
+  border-color: transparent;
+  box-shadow: 0 12px 40px rgba(0, 240, 255, 0.12);
+  background: rgba(14, 14, 18, 0.8);
 }
 
 .glass-panel.cyan-glow:hover {
   border-color: var(--color-cyan);
-  box-shadow: 0 0 20px rgba(0, 240, 255, 0.2);
+  box-shadow: 0 0 25px rgba(0, 240, 255, 0.15);
 }
 
 .glass-panel.purple-glow:hover {
   border-color: var(--color-purple);
-  box-shadow: 0 0 20px rgba(189, 0, 255, 0.2);
+  box-shadow: 0 0 25px rgba(189, 0, 255, 0.15);
 }
 
-/* Glowing Buttons */
-.cyber-button {
+/* Sticky Dot Navigation */
+.dot-navigation {
+  position: fixed;
+  right: 50px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  z-index: 100;
+}
+
+.dot-nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  cursor: pointer;
   background: transparent;
+  border: none;
+}
+
+.dot-nav-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  opacity: 0;
+  transform: translateX(10px);
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.dot-nav-item:hover .dot-nav-label {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.dot-nav-circle {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid var(--text-muted);
+  background: transparent;
+  transition: all 0.3s ease;
+}
+
+.dot-nav-item.active .dot-nav-circle {
+  background: var(--color-cyan);
+  border-color: var(--color-cyan);
+  box-shadow: 0 0 12px var(--color-cyan);
+  transform: scale(1.4);
+}
+
+.dot-nav-item.active .dot-nav-label {
+  opacity: 1;
+  transform: translateX(0);
+  color: var(--color-cyan);
+}
+
+/* =====================================================
+   ChainGPT-style LAUNCH DAPP Pill Button
+   ===================================================== */
+.launch-dapp-btn {
+  border-radius: 999px;
+  border: 1.5px solid transparent;
+  background:
+    linear-gradient(#050505, #050505) padding-box,
+    linear-gradient(135deg, #00f5ff 0%, #8b00ff 35%, #ff6b00 65%, #00f5ff 100%) border-box;
+  background-size: 200% 200%;
+  animation: rainbowShift 4s ease infinite;
+  color: #ffffff;
+  padding: 10px 28px;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.launch-dapp-btn:hover {
+  background:
+    linear-gradient(rgba(0, 240, 255, 0.08), rgba(0, 240, 255, 0.08)) padding-box,
+    linear-gradient(135deg, #00f5ff 0%, #8b00ff 35%, #ff6b00 65%, #00f5ff 100%) border-box;
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+/* =====================================================
+   Glowing Cyber Buttons
+   ===================================================== */
+.cyber-button {
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.1) 0%, rgba(189, 0, 255, 0.05) 100%);
   color: var(--text-primary);
   border: 1px solid var(--color-cyan);
   padding: 12px 24px;
   font-family: var(--font-mono);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
+  font-weight: bold;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   cursor: pointer;
   position: relative;
-  transition: all 0.2s ease-in-out;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   display: inline-flex;
   align-items: center;
   gap: 8px;
   overflow: hidden;
+  border-radius: 4px;
 }
 
 .cyber-button::before {
@@ -174,10 +362,10 @@ h1, h2, h3, h4, h5, h6 {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(0, 240, 255, 0.2),
+    rgba(0, 240, 255, 0.3),
     transparent
   );
-  transition: 0.5s;
+  transition: 0.6s;
 }
 
 .cyber-button:hover::before {
@@ -185,19 +373,57 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .cyber-button:hover {
-  background: rgba(0, 240, 255, 0.1);
-  box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
-  text-shadow: 0 0 5px var(--color-cyan);
+  background: linear-gradient(135deg, var(--color-cyan) 0%, var(--color-purple) 100%);
+  border-color: transparent;
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+  color: #fff;
+  transform: translateY(-2px);
 }
 
 .cyber-button.purple {
   border-color: var(--color-purple);
+  background: linear-gradient(135deg, rgba(189, 0, 255, 0.1) 0%, rgba(251, 122, 82, 0.05) 100%);
 }
 
 .cyber-button.purple:hover {
-  background: rgba(189, 0, 255, 0.1);
-  box-shadow: 0 0 15px rgba(189, 0, 255, 0.4);
-  text-shadow: 0 0 5px var(--color-purple);
+  background: linear-gradient(135deg, var(--color-purple) 0%, var(--color-orange) 100%);
+  box-shadow: 0 0 20px rgba(189, 0, 255, 0.4);
+  color: #fff;
+}
+
+.cyber-button.green {
+  border-color: var(--color-green);
+  background: linear-gradient(135deg, rgba(40, 239, 206, 0.1) 0%, rgba(0, 240, 255, 0.05) 100%);
+}
+
+.cyber-button.green:hover {
+  background: linear-gradient(135deg, var(--color-green) 0%, var(--color-cyan) 100%);
+  box-shadow: 0 0 20px rgba(40, 239, 206, 0.4);
+  color: #fff;
+}
+
+.cyber-button-secondary {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 12px 24px;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cyber-button-secondary:hover {
+  border-color: var(--text-primary);
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.02);
 }
 
 /* Custom Cursor Tracker */
@@ -260,46 +486,32 @@ h1, h2, h3, h4, h5, h6 {
   animation: pulseGlow 2s infinite ease-in-out;
 }
 
-@keyframes glitch {
-  0% {
-    clip-path: inset(40% 0 61% 0);
-  }
-  20% {
-    clip-path: inset(92% 0 1% 0);
-  }
-  40% {
-    clip-path: inset(25% 0 58% 0);
-  }
-  60% {
-    clip-path: inset(75% 0 5% 0);
-  }
-  80% {
-    clip-path: inset(15% 0 80% 0);
-  }
-  100% {
-    clip-path: inset(55% 0 43% 0);
-  }
-}
-
 /* Badge list styles */
 .badge-neon {
-  background: rgba(0, 240, 255, 0.08);
+  background: rgba(0, 240, 255, 0.06);
   color: var(--color-cyan);
-  border: 1px solid rgba(0, 240, 255, 0.3);
-  padding: 4px 8px;
+  border: 1px solid rgba(0, 240, 255, 0.2);
+  padding: 6px 12px;
   font-family: var(--font-mono);
-  font-size: 0.75rem;
-  border-radius: 3px;
+  font-size: 0.7rem;
+  border-radius: 4px;
   text-transform: uppercase;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
+  letter-spacing: 0.05em;
 }
 
 .badge-neon.purple {
-  background: rgba(189, 0, 255, 0.08);
+  background: rgba(189, 0, 255, 0.06);
   color: var(--color-purple);
-  border: 1px solid rgba(189, 0, 255, 0.3);
+  border: 1px solid rgba(189, 0, 255, 0.2);
+}
+
+.badge-neon.green {
+  background: rgba(40, 239, 206, 0.06);
+  color: var(--color-green);
+  border: 1px solid rgba(40, 239, 206, 0.2);
 }
 
 /* Scanlines overlay effect */
@@ -311,10 +523,699 @@ h1, h2, h3, h4, h5, h6 {
   height: 100%;
   background: linear-gradient(
     rgba(18, 16, 16, 0) 50%, 
-    rgba(0, 0, 0, 0.25) 50%
+    rgba(0, 0, 0, 0.2) 50%
   );
   background-size: 100% 4px;
   z-index: 9999;
   pointer-events: none;
-  opacity: 0.15;
+  opacity: 0.12;
+}
+
+/* Accordion FAQs */
+.faq-accordion {
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  background: rgba(10, 10, 12, 0.4);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.faq-accordion:hover {
+  border-color: rgba(0, 240, 255, 0.2);
+}
+
+.faq-header {
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.faq-title {
+  color: #fff;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.faq-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1), padding 0.35s ease;
+  padding: 0 24px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.faq-accordion.open .faq-content {
+  padding-bottom: 20px;
+}
+
+.faq-toggle-icon {
+  transition: transform 0.3s ease;
+  color: var(--color-cyan);
+}
+
+.faq-accordion.open .faq-toggle-icon {
+  transform: rotate(45deg);
+  color: var(--color-purple);
+}
+
+/* Tab buttons for Team */
+.team-tab-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  padding: 10px 20px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 4px;
+}
+
+.team-tab-btn:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.team-tab-btn.active {
+  color: var(--color-cyan);
+  border-color: var(--color-cyan);
+  background: rgba(0, 240, 255, 0.04);
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.1);
+}
+
+/* Grayscale hover animation for Team profiles */
+.team-profile-card {
+  transition: all 0.3s ease;
+}
+
+.team-profile-card img {
+  filter: grayscale(100%);
+  transition: all 0.3s ease;
+}
+
+.team-profile-card:hover img {
+  filter: grayscale(0%);
+}
+
+.team-profile-card:hover {
+  transform: translateY(-4px);
+}
+
+/* =====================================================
+   ChainGPT Hero: Bracket Word Style
+   ===================================================== */
+.hero-bracket-word {
+  display: inline-block;
+  border: 1.5px solid transparent;
+  background:
+    linear-gradient(#000, #000) padding-box,
+    linear-gradient(135deg, #00f5ff, #8b00ff, #ff6600) border-box;
+  padding: 4px 20px 8px 20px;
+  line-height: 1.15;
+  font-size: 3.2rem;
+  font-weight: 800;
+  color: #fff;
+  font-family: var(--font-sans);
+  letter-spacing: -0.02em;
+  transition: box-shadow 0.3s;
+}
+
+.hero-bracket-word:hover {
+  box-shadow: 0 0 28px rgba(0, 240, 255, 0.14);
+}
+
+.hero-pretitle {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+
+/* =====================================================
+   HUD Typing Prompts (Left Side Hero — ChainGPT style)
+   ===================================================== */
+.hud-prompt-box {
+  background: rgba(8, 8, 12, 0.90);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 6px;
+  padding: 16px 18px;
+  max-width: 420px;
+  position: relative;
+  margin-bottom: 14px;
+}
+
+.hud-prompt-box .hud-quote-icon {
+  position: absolute;
+  top: -10px;
+  left: 14px;
+  background: #000;
+  padding: 0 6px;
+  color: var(--color-cyan);
+  font-size: 1.1rem;
+  line-height: 1;
+  font-family: serif;
+}
+
+.hud-prompt-box p {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  color: #fff;
+  line-height: 1.6;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.hud-prompt-cycling {
+  animation: hudPromptFade 4s ease-in-out infinite;
+}
+
+.hud-sub-prompt {
+  border-left: 2px solid rgba(255, 255, 255, 0.1);
+  padding-left: 16px;
+  max-width: 420px;
+}
+
+.hud-sub-prompt .hud-label {
+  font-size: 0.62rem;
+  color: var(--color-green);
+  border: none;
+  margin-bottom: 6px;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.hud-sub-prompt p {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* =====================================================
+   Right-Side "Deploying On" Style Feature List
+   ===================================================== */
+.deploying-on-box {
+  border: 1px solid rgba(189, 0, 255, 0.18);
+  border-radius: 6px;
+  padding: 14px 18px;
+  background: rgba(8, 8, 12, 0.88);
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.deploy-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-purple);
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+.deploy-feature-list {
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.deploy-list-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 0.73rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+  padding: 11px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  transition: all 0.2s;
+}
+
+.deploy-list-item:last-child {
+  border-bottom: none;
+}
+
+.deploy-list-item:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.deploy-list-item .feat-tri {
+  font-size: 0.5rem;
+  color: rgba(255, 255, 255, 0.18);
+  transition: color 0.2s;
+}
+
+.deploy-list-item:hover .feat-tri {
+  color: var(--color-cyan);
+}
+
+/* =====================================================
+   Scroll Indicator (Bottom Right — ChainGPT style)
+   ===================================================== */
+.scroll-indicator {
+  position: fixed;
+  bottom: 36px;
+  right: 70px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  z-index: 150;
+  pointer-events: none;
+}
+
+.scroll-indicator-text {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.scroll-indicator-arrow {
+  width: 30px;
+  height: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.75rem;
+  animation: scrollBounce 1.8s ease-in-out infinite;
+}
+
+/* =====================================================
+   Solutions Section — ChainGPT Scroll-Pin Layout
+   ===================================================== */
+.solutions-wrapper {
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  position: relative;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+.solutions-sticky-left {
+  position: sticky;
+  top: 100px;
+  align-self: start;
+  padding: 80px 40px 80px 0;
+}
+
+.solutions-scroll-right {
+  border-left: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 80px 0 80px 80px;
+  display: flex;
+  flex-direction: column;
+}
+
+.solution-entry {
+  padding: 44px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  gap: 120px;
+  align-items: start;
+}
+
+.solution-entry:last-child {
+  border-bottom: none;
+}
+
+.solution-num {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.solution-num::before {
+  content: '';
+  display: inline-block;
+  width: 18px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.35;
+}
+
+.solution-title {
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 14px;
+  line-height: 1.25;
+  font-family: var(--font-sans);
+  letter-spacing: -0.02em;
+}
+
+.solution-desc {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  line-height: 1.65;
+}
+
+.solution-feature-list {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.solution-feature-item {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 12px 16px;
+  color: var(--text-muted);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: default;
+}
+
+.solution-feature-item:last-child {
+  border-bottom: none;
+}
+
+.solution-feature-item:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.solution-feature-item .feat-arrow {
+  color: rgba(255, 255, 255, 0.14);
+  font-size: 0.52rem;
+  transition: color 0.2s;
+}
+
+.solution-feature-item:hover .feat-arrow {
+  color: var(--color-cyan);
+}
+
+.solution-feature-item.cta-item {
+  color: var(--color-cyan);
+  cursor: pointer;
+  border-top: 1px solid rgba(0, 240, 255, 0.1);
+}
+
+/* =====================================================
+   Navbar Rainbow Bottom Border
+   ===================================================== */
+.navbar-rainbow-border {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1.5px;
+  background: linear-gradient(
+    90deg,
+    #00f5ff 0%,
+    #7b00ff 25%,
+    #ff6b00 50%,
+    #ff0080 75%,
+    #00f5ff 100%
+  );
+  background-size: 200% 100%;
+  animation: rainbowShift 5s linear infinite;
+  pointer-events: none;
+}
+
+/* =====================================================
+   Announcement Top Banner (ChainGPT style)
+   ===================================================== */
+.announce-banner {
+  background: rgba(5, 5, 8, 0.98);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 9px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  position: relative;
+  overflow: hidden;
+}
+
+.announce-banner .link {
+  color: var(--color-cyan);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.announce-banner .link:hover {
+  opacity: 0.8;
+}
+
+.announce-banner .banner-close {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 4px 6px;
+  transition: color 0.2s;
+}
+
+.announce-banner .banner-close:hover {
+  color: #fff;
+}
+
+/* =====================================================
+   ChainGPT Multi-Column Mega Footer
+   ===================================================== */
+.footer-mega {
+  padding: 64px 80px 28px 80px;
+  position: relative;
+  z-index: 10;
+  background: #050506;
+}
+
+.footer-mega::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0, 240, 255, 0.35) 25%,
+    rgba(189, 0, 255, 0.35) 50%,
+    rgba(255, 107, 0, 0.35) 75%,
+    transparent 100%
+  );
+}
+
+.footer-main-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  gap: 40px 60px;
+  margin-bottom: 48px;
+}
+
+.footer-col-title {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 18px;
+}
+
+.footer-link {
+  display: block;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.875rem;
+  padding: 5px 0;
+  text-decoration: none;
+  transition: color 0.2s;
+  cursor: pointer;
+  background: none;
+  border: none;
+  text-align: left;
+  font-family: var(--font-sans);
+  line-height: 1.5;
+}
+
+.footer-link:hover {
+  color: #fff;
+}
+
+.footer-social-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.footer-social-link {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 0;
+  text-decoration: none;
+  transition: color 0.2s;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.footer-social-link:hover {
+  color: #fff;
+}
+
+.footer-social-arrow {
+  font-size: 0.65rem;
+  opacity: 0.45;
+  transition: opacity 0.2s;
+}
+
+.footer-social-link:hover .footer-social-arrow {
+  opacity: 1;
+}
+
+.footer-bottom-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.2);
+  text-transform: uppercase;
+}
+
+/* =====================================================
+   ChainGPT UI exact elements
+   ===================================================== */
+.chaingpt-quote-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: 420px;
+  margin-bottom: 24px;
+  position: relative;
+  width: 100%;
+}
+
+.chaingpt-quote-icon-box {
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-bottom: none;
+  background: #000;
+  color: #fff;
+  font-family: serif;
+  font-size: 1.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  z-index: 2;
+}
+
+.chaingpt-quote-content-box {
+  background: rgba(8, 8, 12, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 16px 20px;
+  width: 100%;
+  margin-top: -1px;
+  position: relative;
+  z-index: 1;
+}
+
+.chaingpt-quote-content-box p {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  color: #fff;
+  line-height: 1.6;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.chaingpt-deploying-wrapper {
+  border: 1px solid rgba(189, 0, 255, 0.25);
+  border-radius: 6px;
+  padding: 14px 18px;
+  background: rgba(8, 8, 12, 0.88);
+  margin-bottom: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.chaingpt-deploying-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.chaingpt-mini-logo {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--color-purple);
+  opacity: 0.85;
+}
+
+.chaingpt-deploying-target {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+}
+
+.deploying-arrow {
+  color: var(--color-purple);
+  font-size: 0.6rem;
+}
+
+.deploying-text {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: #fff;
+  letter-spacing: 0.08em;
+  font-weight: bold;
 }
