@@ -1,0 +1,19 @@
+part of 'user_model.dart';
+
+@freezed
+class UserModel with _$UserModel {
+  const factory UserModel({
+    required String id,
+    required String email,
+    String? username,
+    required String role,
+    required bool isEmailVerified,
+    required bool isActive,
+    required bool mfaEnabled,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+  }) = _UserModel;
+
+  factory UserModel.fromJson(Map<String, dynamic> json) =>
+      _$UserModelFromJson(json);
+}
