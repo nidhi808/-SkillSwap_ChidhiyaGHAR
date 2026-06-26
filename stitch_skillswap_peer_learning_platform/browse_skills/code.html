@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SkillSwap | Browse Skills</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@500&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@100..900&family=JetBrains+Mono:wght@100..900&family=Sora:wght@100..900&display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: #161B22;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-card:hover {
+            border-color: rgba(0, 219, 233, 0.4);
+            box-shadow: 0 10px 30px -15px rgba(0, 219, 233, 0.2);
+        }
+        .neon-glow-cyan {
+            box-shadow: 0 0 15px rgba(0, 219, 233, 0.3);
+        }
+        .neon-glow-purple {
+            box-shadow: 0 0 15px rgba(233, 179, 255, 0.3);
+        }
+        .skill-gradient {
+            background: linear-gradient(90deg, #00dbe9 0%, #e9b3ff 100%);
+        }
+        body {
+            background-color: #111318;
+            color: #e2e2e8;
+            overflow-x: hidden;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #111318; }
+        ::-webkit-scrollbar-thumb { background: #333539; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #849495; }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error": "#690005",
+                        "surface-container-highest": "#333539",
+                        "error-container": "#93000a",
+                        "on-tertiary-fixed": "#40000e",
+                        "on-surface-variant": "#b9cacb",
+                        "on-secondary-fixed": "#310048",
+                        "outline": "#849495",
+                        "on-error-container": "#ffdad6",
+                        "primary": "#dbfcff",
+                        "surface-bright": "#37393e",
+                        "surface-tint": "#00dbe9",
+                        "surface-variant": "#333539",
+                        "on-background": "#e2e2e8",
+                        "tertiary-fixed": "#ffdadb",
+                        "tertiary-container": "#ffcdcf",
+                        "surface-container-high": "#282a2e",
+                        "secondary-fixed-dim": "#e9b3ff",
+                        "surface-container-lowest": "#0c0e12",
+                        "tertiary": "#fff3f3",
+                        "on-surface": "#e2e2e8",
+                        "primary-fixed": "#7df4ff",
+                        "surface": "#111318",
+                        "error": "#ffb4ab",
+                        "primary-fixed-dim": "#00dbe9",
+                        "secondary-container": "#7d01b1",
+                        "inverse-primary": "#006970",
+                        "inverse-on-surface": "#2f3035",
+                        "on-primary-fixed-variant": "#004f54",
+                        "primary-container": "#00f0ff",
+                        "tertiary-fixed-dim": "#ffb2b7",
+                        "on-tertiary": "#67001c",
+                        "outline-variant": "#3b494b",
+                        "surface-dim": "#111318",
+                        "secondary": "#e9b3ff",
+                        "on-secondary-container": "#e5a9ff",
+                        "on-primary": "#00363a",
+                        "on-tertiary-fixed-variant": "#91002b",
+                        "secondary-fixed": "#f6d9ff",
+                        "inverse-surface": "#e2e2e8",
+                        "on-secondary-fixed-variant": "#7200a3",
+                        "background": "#111318",
+                        "on-tertiary-container": "#be003b",
+                        "surface-container": "#1e2024",
+                        "surface-container-low": "#1a1c20",
+                        "on-secondary": "#510074",
+                        "on-primary-container": "#006970",
+                        "on-primary-fixed": "#002022"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "section-gap": "120px",
+                        "base": "8px",
+                        "margin-desktop": "64px",
+                        "gutter": "24px",
+                        "container-max": "1280px"
+                    },
+                    "fontFamily": {
+                        "headline-xl": ["Sora"],
+                        "body-md": ["Hanken Grotesk"],
+                        "body-lg": ["Hanken Grotesk"],
+                        "headline-md": ["Sora"],
+                        "headline-xl-mobile": ["Sora"],
+                        "display-lg": ["Sora"],
+                        "label-sm": ["JetBrains Mono"]
+                    },
+                    "fontSize": {
+                        "headline-xl": ["40px", {"lineHeight": "48px", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "500"}],
+                        "headline-xl-mobile": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                        "display-lg": ["64px", {"lineHeight": "72px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopNavBar -->
+<header class="w-full top-0 sticky bg-surface dark:bg-surface border-b border-outline-variant z-50">
+<nav class="max-w-container-max mx-auto px-margin-desktop flex justify-between items-center h-20">
+<div class="flex items-center gap-12">
+<span class="font-headline-md text-headline-md font-bold text-primary">SkillSwap</span>
+<div class="hidden md:flex gap-8">
+<a class="text-primary font-bold border-b-2 border-primary pb-1 font-body-md" href="#">Browse Skills</a>
+<a class="text-on-surface-variant font-body-md hover:text-primary transition-colors duration-200" href="#">My Matches</a>
+<a class="text-on-surface-variant font-body-md hover:text-primary transition-colors duration-200" href="#">Schedule</a>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="relative hidden lg:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="bg-surface-container-low border border-outline-variant rounded-full py-2 pl-10 pr-4 w-64 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all text-body-md" placeholder="Search skills..." type="text"/>
+</div>
+<div class="flex items-center gap-3 bg-surface-container rounded-full px-2 py-1 border border-outline-variant hover:border-primary transition-colors cursor-pointer">
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container-highest">
+<img class="w-full h-full object-cover" data-alt="A professional close-up studio portrait of a young woman with a friendly smile, representing a skilled mentor in a modern tech-focused environment. She has warm lighting on her face with a soft-focus office background that uses a deep navy and cyan color palette to match the SkillSwap brand identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDPSVtCmdk6oxp6EoMcOvdBeNvp8GulgPh5a-n8Z9NIkWQDHNLnTIMwCAmIFR-q7xmcExyw5ozAvwvgdpjxXmPVp3ChRVdA6yCH7pTIT-QP0TWkZN-zOwKgeg95TOrnSLqweYmNXr3qDUUxBxa16bp4nd1klHeyJsX_o7CnAWm0rBsMq7PvL5RnAMTRQwtYj8aD_lfyKVU1XBgB5wBaL1E0emAu8gGQgiWpRtPp9p69gYsmuNNAJBZcYdBMmeSDdkUMc5IuylVPJvQ"/>
+</div>
+<span class="text-label-sm mr-2">Profile</span>
+</div>
+</div>
+</nav>
+</header>
+<main class="max-w-container-max mx-auto px-margin-desktop py-12">
+<!-- Hero Search & Filters -->
+<section class="mb-16">
+<div class="flex flex-col gap-8">
+<div>
+<h1 class="font-headline-xl text-headline-xl text-primary mb-2">Find your next spark.</h1>
+<p class="text-on-surface-variant text-body-lg max-w-2xl">Connect with thousands of learners in the lab. Swap your expertise and accelerate your learning journey through direct collaboration.</p>
+</div>
+<div class="bg-surface-container border border-outline-variant rounded-xl p-6 flex flex-wrap gap-4 items-end">
+<div class="flex-1 min-w-[280px]">
+<label class="block text-label-sm text-on-surface-variant mb-2">WHICH SKILL?</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-primary">psychology</span>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg py-3 pl-10 pr-4 focus:border-primary focus:ring-0 transition-all text-body-md" placeholder="e.g. React Native, UI Design..." type="text"/>
+</div>
+</div>
+<div class="w-full md:w-48">
+<label class="block text-label-sm text-on-surface-variant mb-2">CATEGORY</label>
+<select class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg py-3 px-4 focus:border-primary focus:ring-0 appearance-none text-body-md">
+<option>All Categories</option>
+<option>Coding</option>
+<option>Design</option>
+<option>Languages</option>
+<option>Marketing</option>
+</select>
+</div>
+<div class="w-full md:w-48">
+<label class="block text-label-sm text-on-surface-variant mb-2">PROFICIENCY</label>
+<select class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg py-3 px-4 focus:border-primary focus:ring-0 appearance-none text-body-md">
+<option>Any Level</option>
+<option>Beginner</option>
+<option>Intermediate</option>
+<option>Expert</option>
+</select>
+</div>
+<button class="bg-primary-fixed-dim hover:bg-primary-container text-on-primary font-bold px-8 py-3 rounded-lg transition-all active:scale-95 flex items-center gap-2 h-[50px]">
+<span class="material-symbols-outlined">filter_list</span>
+                        Find Match
+                    </button>
+</div>
+<div class="flex flex-wrap gap-3">
+<span class="text-label-sm text-on-surface-variant py-2">TRENDING:</span>
+<span class="bg-surface-container-highest text-on-surface px-4 py-1.5 rounded-full text-label-sm border border-outline-variant hover:border-primary cursor-pointer transition-colors">#Python</span>
+<span class="bg-surface-container-highest text-on-surface px-4 py-1.5 rounded-full text-label-sm border border-outline-variant hover:border-primary cursor-pointer transition-colors">#Figma</span>
+<span class="bg-surface-container-highest text-on-surface px-4 py-1.5 rounded-full text-label-sm border border-outline-variant hover:border-primary cursor-pointer transition-colors">#Spanish</span>
+<span class="bg-surface-container-highest text-on-surface px-4 py-1.5 rounded-full text-label-sm border border-outline-variant hover:border-primary cursor-pointer transition-colors">#Web3</span>
+</div>
+</div>
+</section>
+<!-- Discovery Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+<!-- Card 1 -->
+<div class="glass-card rounded-xl p-6 flex flex-col gap-6 group">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-4">
+<div class="w-14 h-14 rounded-full border-2 border-primary overflow-hidden p-0.5">
+<img class="w-full h-full object-cover rounded-full" data-alt="A vibrant avatar of a young creative professional with short neon-accented hair. The portrait is set against a dark architectural background with soft purple backlighting. High contrast, professional lighting, modern minimalist style consistent with the SkillSwap Lab design system." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAE7lVv4YQWOKqVShZbWKUUb7mUQsW9uSRy0bRmIdetJCCrPcohuinnYS7_7mWJDHb8o9Qj5n-TUKFUd20NtIG_nNqX9ZIbyWpa0Fgx3Gpy5mEQu5Fyj_0PZ9Pr3aFpShqJvjTL76pmC3VUEQPYJnYCUTcFKAcL8wOjiacYdl6tdtcuShaVJYDCjCw67PDNCrkHuy1dJAX2P9tBDqR2_kMxUEwjKiSvfejmZMbsHy9udZyig-xIsKPSivuMS7OaRT2XRYtuYVYzOm8"/>
+</div>
+<div>
+<h3 class="font-headline-md text-on-surface">Alex Chen</h3>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-primary" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-label-sm text-on-surface">4.9</span>
+<span class="text-label-sm text-on-surface-variant ml-2">Stanford University</span>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors cursor-pointer">more_vert</span>
+</div>
+<div class="flex flex-col gap-4">
+<div>
+<span class="text-label-sm text-on-surface-variant block mb-2">OFFERING</span>
+<div class="flex flex-wrap gap-2">
+<span class="bg-primary-container/10 text-primary border border-primary/20 px-3 py-1 rounded-full text-label-sm">React Native</span>
+<span class="bg-primary-container/10 text-primary border border-primary/20 px-3 py-1 rounded-full text-label-sm">Typescript</span>
+</div>
+</div>
+<div>
+<span class="text-label-sm text-on-surface-variant block mb-2">WANTING</span>
+<div class="flex flex-wrap gap-2">
+<span class="bg-secondary-container/10 text-secondary border border-secondary/20 px-3 py-1 rounded-full text-label-sm">Motion Design</span>
+</div>
+</div>
+</div>
+<div class="pt-4 border-t border-outline-variant flex items-center justify-between">
+<span class="text-label-sm text-primary">Active now</span>
+<button class="bg-primary hover:bg-white text-on-primary font-bold px-5 py-2 rounded-lg transition-all active:scale-95 neon-glow-cyan text-label-sm">Swap Request</button>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="glass-card rounded-xl p-6 flex flex-col gap-6 group">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-4">
+<div class="w-14 h-14 rounded-full border-2 border-secondary overflow-hidden p-0.5">
+<img class="w-full h-full object-cover rounded-full" data-alt="A portrait of a male designer wearing glasses, looking into the camera with a confident expression. The environment is a futuristic design studio with subtle neon purple lighting lines. The style is sharp, clean, and highly professional, fitting a high-end educational technology platform aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3W0jGPgDQ1zRebkA0bLj69SZl_vQmY5Ug3Jw7IK4WNEad7Cdof1YK6TghY1bKFmhlWlAVOPmAR2MMI9Fto9nFN8E9LtSlomwFG-SNedi0-Rs6COgIVIM5-PpIw-wvHRULEyDCGbj3Aojm-WEQ4pjf3Z38K4EXfGjl5RBJmhQQKoLPzJnq2WkMFovhdxkLFswpK1Bgec4sVV8i1nQvO9YSkL90tr7_Lc_zOll7RRIJ5gLaGsuYZMjKZ0HagHmsOAXvXv0m2zzVRTc"/>
+</div>
+<div>
+<h3 class="font-headline-md text-on-surface">Sarah Miller</h3>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-primary" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-label-sm text-on-surface">5.0</span>
+<span class="text-label-sm text-on-surface-variant ml-2">RISD</span>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors cursor-pointer">more_vert</span>
+</div>
+<div class="flex flex-col gap-4">
+<div>
+<span class="text-label-sm text-on-surface-variant block mb-2">OFFERING</span>
+<div class="flex flex-wrap gap-2">
+<span class="bg-primary-container/10 text-primary border border-primary/20 px-3 py-1 rounded-full text-label-sm">UX Strategy</span>
+<span class="bg-primary-container/10 text-primary border border-primary/20 px-3 py-1 rounded-full text-label-sm">Figma</span>
+</div>
+</div>
+<div>
+<span class="text-label-sm text-on-surface-variant block mb-2">WANTING</span>
+<div class="flex flex-wrap gap-2">
+<span class="bg-secondary-container/10 text-secondary border border-secondary/20 px-3 py-1 rounded-full text-label-sm">Python Basics</span>
+</div>
+</div>
+</div>
+<div class="pt-4 border-t border-outline-variant flex items-center justify-between">
+<span class="text-label-sm text-on-surface-variant">Last active 2h ago</span>
+<button class="bg-primary hover:bg-white text-on-primary font-bold px-5 py-2 rounded-lg transition-all active:scale-95 neon-glow-cyan text-label-sm">Swap Request</button>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="glass-card rounded-xl p-6 flex flex-col gap-6 group">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-4">
+<div class="w-14 h-14 rounded-full border-2 border-primary overflow-hidden p-0.5">
+<img class="w-full h-full object-cover rounded-full" data-alt="A professional headshot of a person with a bright, energetic personality, wearing modern minimalist clothing. The background is a blurred high-tech lab setting with cyan neon light tubes. Clean composition, professional studio lighting, cosmic navy background colors." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBkGGNllLaKNcu0ntyORo7Mjj-RpK_WyM1leM4xWO1JkJuoxBMXgZ0OFjMzxhfBbjjGLjBq_sF-DdprAW7rqr6L2zK1oaGWR8GoC6wI7Y_QSLHz3HZrGvLEQFYJxKXia8YiNgqujx_8FyyaainPSwbD7e2-5MJydjs1so-Z-u7kzkte2xh41Pe_11x51UhZ7DFDWp8Hya6mIO_nRGnv6WZmKQWAWCJNlOGsy1jNXgOLIltHtithjL-VUIZ4lFhebTjCZUVDzZYBd6E"/>
+</div>
+<div>
+<h3 class="font-headline-md text-on-surface">Liam Park</h3>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-primary" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-label-sm text-on-surface">4.7</span>
+<span class="text-label-sm text-on-surface-variant ml-2">MIT</span>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors cursor-pointer">more_vert</span>
+</div>
+<div class="flex flex-col gap-4">
+<div>
+<span class="text-label-sm text-on-surface-variant block mb-2">OFFERING</span>
+<div class="flex flex-wrap gap-2">
+<span class="bg-primary-container/10 text-primary border border-primary/20 px-3 py-1 rounded-full text-label-sm">Data Structures</span>
+</div>
+</div>
+<div>
+<span class="text-label-sm text-on-surface-variant block mb-2">WANTING</span>
+<div class="flex flex-wrap gap-2">
+<span class="bg-secondary-container/10 text-secondary border border-secondary/20 px-3 py-1 rounded-full text-label-sm">Public Speaking</span>
+<span class="bg-secondary-container/10 text-secondary border border-secondary/20 px-3 py-1 rounded-full text-label-sm">French</span>
+</div>
+</div>
+</div>
+<div class="pt-4 border-t border-outline-variant flex items-center justify-between">
+<span class="text-label-sm text-primary">Active now</span>
+<button class="bg-primary hover:bg-white text-on-primary font-bold px-5 py-2 rounded-lg transition-all active:scale-95 neon-glow-cyan text-label-sm">Swap Request</button>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="glass-card rounded-xl p-6 flex flex-col gap-6 group">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-4">
+<div class="w-14 h-14 rounded-full border-2 border-secondary overflow-hidden p-0.5">
+<img class="w-full h-full object-cover rounded-full" data-alt="A portrait of a young woman with a focused and creative expression, wearing a stylish dark hoodie. Behind her is a soft-focus graphic design workspace with neon purple atmospheric lighting. The image captures a blend of academic excellence and modern tech innovation." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAknH5DvSOdMk9sV4c9OVXiUYC3FapTTf-ZeqDHIXpA7GgUdFdXGKuu46RNfrdKYTVCWXcxiHsj4OA6vQwvDpG_sW-e9ItG9z-fuZy6q2ColpUxpQ162z4LsA9s4YIweJBzOAjNCnw5stYRlgDz2aaZc3vcjZw21FpXfmjdbLQ9fHesy9d4EkIFfyknjCOs_9jeF35JESvNP9iCHpe9rLgF_YLACTckuB2BlZUlc3lXylwfyJX2LZfUvlkaFHhy-Y68hRzYxG8iizk"/>
+</div>
+<div>
+<h3 class="font-headline-md text-on-surface">Elena Rodriguez</h3>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-primary" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-label-sm text-on-surface">4.8</span>
+<span class="text-label-sm text-on-surface-variant ml-2">UCLA</span>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors cursor-pointer">more_vert</span>
+</div>
+<div class="flex flex-col gap-4">
+<div>
+<span class="text-label-sm text-on-surface-variant block mb-2">OFFERING</span>
+<div class="flex flex-wrap gap-2">
+<span class="bg-primary-container/10 text-primary border border-primary/20 px-3 py-1 rounded-full text-label-sm">Spanish</span>
+<span class="bg-primary-container/10 text-primary border border-primary/20 px-3 py-1 rounded-full text-label-sm">Creative Writing</span>
+</div>
+</div>
+<div>
+<span class="text-label-sm text-on-surface-variant block mb-2">WANTING</span>
+<div class="flex flex-wrap gap-2">
+<span class="bg-secondary-container/10 text-secondary border border-secondary/20 px-3 py-1 rounded-full text-label-sm">3D Modeling</span>
+</div>
+</div>
+</div>
+<div class="pt-4 border-t border-outline-variant flex items-center justify-between">
+<span class="text-label-sm text-on-surface-variant">Last active 5m ago</span>
+<button class="bg-primary hover:bg-white text-on-primary font-bold px-5 py-2 rounded-lg transition-all active:scale-95 neon-glow-cyan text-label-sm">Swap Request</button>
+</div>
+</div>
+<!-- Card 5 -->
+<div class="glass-card rounded-xl p-6 flex flex-col gap-6 group">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-4">
+<div class="w-14 h-14 rounded-full border-2 border-primary overflow-hidden p-0.5">
+<img class="w-full h-full object-cover rounded-full" data-alt="A portrait of a male computer scientist in a dark tech-oriented environment. He has a thoughtful expression. The lighting is dominated by electric cyan and deep indigo tones, creating a high-energy, futuristic professional feel. High-quality photographic style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC1mtKyLCJaNnhpNRTtT9S-HhZd8yW6rLk7wgNAJI2Y-TeFfF7WfhzvNTq63PeDLZRh7y4JSNxy_vUA4XWRRXJIT8pVtjYdgVK08g1ZLNxkCv2XEHucu7TITrPhZndedkdd8h76ZQ3AgaYU7Gg3kxQHzD2ZM4vKAoWjpRIWtfUsS0fg4ckqlHbFMl8ssxYvARA9Gs7EAsW6hhPCea5-_RyTWoqgSM8v8dNRIwq53iORmcwY4OTCBNw1vbCNnueweexW-xpC1QfyZx4"/>
+</div>
+<div>
+<h3 class="font-headline-md text-on-surface">Marcus Wu</h3>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-primary" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-label-sm text-on-surface">4.9</span>
+<span class="text-label-sm text-on-surface-variant ml-2">Georgia Tech</span>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors cursor-pointer">more_vert</span>
+</div>
+<div class="flex flex-col gap-4">
+<div>
+<span class="text-label-sm text-on-surface-variant block mb-2">OFFERING</span>
+<div class="flex flex-wrap gap-2">
+<span class="bg-primary-container/10 text-primary border border-primary/20 px-3 py-1 rounded-full text-label-sm">Solidity</span>
+<span class="bg-primary-container/10 text-primary border border-primary/20 px-3 py-1 rounded-full text-label-sm">Cryptography</span>
+</div>
+</div>
+<div>
+<span class="text-label-sm text-on-surface-variant block mb-2">WANTING</span>
+<div class="flex flex-wrap gap-2">
+<span class="bg-secondary-container/10 text-secondary border border-secondary/20 px-3 py-1 rounded-full text-label-sm">Jazz Piano</span>
+</div>
+</div>
+</div>
+<div class="pt-4 border-t border-outline-variant flex items-center justify-between">
+<span class="text-label-sm text-on-surface-variant">Last active 1d ago</span>
+<button class="bg-primary hover:bg-white text-on-primary font-bold px-5 py-2 rounded-lg transition-all active:scale-95 neon-glow-cyan text-label-sm">Swap Request</button>
+</div>
+</div>
+<!-- Card 6 -->
+<div class="glass-card rounded-xl p-6 flex flex-col gap-6 group">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-4">
+<div class="w-14 h-14 rounded-full border-2 border-primary overflow-hidden p-0.5">
+<img class="w-full h-full object-cover rounded-full" data-alt="A vibrant, professional headshot of a woman with an artistic look. She is in a minimalist art studio at night, with neon accent lighting reflecting off modern canvas textures. The color palette is focused on vibrant purples and deep blues, maintaining a cyber-minimalist aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAewuou3TKYO92CEbvRRXLGtJiCQmeiAIpHAg2lQ49cGa9nIsY1gVljoI22dPXAdcKJR7QwyvGAShRsi4Jws6AsyoDIiNmzI0FHJOAQWLUpt6wzXSiGHgayPY1DYyUwNICVgfLLVvWzjztj9mqV6FslCYP-ez04Mv8nAXCpAQPe_cqLbGbP6xdwUA_-vEAISKq6R_ATtqX8Ccu5-AS0_xfj85T3FPHdScMKMDTl-fmGDxp7a4okl6aSXah_NB4rdT7ar5pvj7BByuc"/>
+</div>
+<div>
+<h3 class="font-headline-md text-on-surface">Chloe Taylor</h3>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-primary" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-label-sm text-on-surface">5.0</span>
+<span class="text-label-sm text-on-surface-variant ml-2">Parsons School</span>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors cursor-pointer">more_vert</span>
+</div>
+<div class="flex flex-col gap-4">
+<div>
+<span class="text-label-sm text-on-surface-variant block mb-2">OFFERING</span>
+<div class="flex flex-wrap gap-2">
+<span class="bg-primary-container/10 text-primary border border-primary/20 px-3 py-1 rounded-full text-label-sm">Brand Design</span>
+</div>
+</div>
+<div>
+<span class="text-label-sm text-on-surface-variant block mb-2">WANTING</span>
+<div class="flex flex-wrap gap-2">
+<span class="bg-secondary-container/10 text-secondary border border-secondary/20 px-3 py-1 rounded-full text-label-sm">Product Management</span>
+<span class="bg-secondary-container/10 text-secondary border border-secondary/20 px-3 py-1 rounded-full text-label-sm">Agile</span>
+</div>
+</div>
+</div>
+<div class="pt-4 border-t border-outline-variant flex items-center justify-between">
+<span class="text-label-sm text-primary">Active now</span>
+<button class="bg-primary hover:bg-white text-on-primary font-bold px-5 py-2 rounded-lg transition-all active:scale-95 neon-glow-cyan text-label-sm">Swap Request</button>
+</div>
+</div>
+</div>
+<!-- Pagination -->
+<div class="mt-section-gap flex justify-center items-center gap-4">
+<button class="w-10 h-10 rounded-full border border-outline-variant flex items-center justify-center hover:bg-surface-container transition-colors disabled:opacity-30" disabled="">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<span class="bg-primary text-on-primary w-10 h-10 rounded-full flex items-center justify-center font-bold">1</span>
+<button class="w-10 h-10 rounded-full border border-outline-variant flex items-center justify-center hover:bg-surface-container transition-colors">2</button>
+<button class="w-10 h-10 rounded-full border border-outline-variant flex items-center justify-center hover:bg-surface-container transition-colors">3</button>
+<span class="text-on-surface-variant">...</span>
+<button class="w-10 h-10 rounded-full border border-outline-variant flex items-center justify-center hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full mt-section-gap bg-surface-container-lowest dark:bg-surface-container-lowest">
+<div class="max-w-container-max mx-auto px-margin-desktop py-16 grid grid-cols-1 md:grid-cols-12 gap-gutter">
+<div class="md:col-span-4 flex flex-col gap-6">
+<span class="font-headline-md text-headline-md text-primary">SkillSwap</span>
+<p class="text-on-surface-variant text-body-md max-w-xs">Connecting the world's most curious minds through peer-to-peer knowledge exchange. Learn faster, together.</p>
+<div class="flex gap-4">
+<a class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors border border-outline-variant" href="#">
+<span class="material-symbols-outlined">public</span>
+</a>
+<a class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors border border-outline-variant" href="#">
+<span class="material-symbols-outlined">terminal</span>
+</a>
+<a class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors border border-outline-variant" href="#">
+<span class="material-symbols-outlined">diversity_3</span>
+</a>
+</div>
+</div>
+<div class="md:col-span-2 flex flex-col gap-4">
+<h4 class="text-on-surface font-bold text-label-sm uppercase tracking-widest">Platform</h4>
+<a class="text-on-surface-variant hover:text-secondary-fixed-dim transition-colors text-body-md" href="#">Leaderboard</a>
+<a class="text-on-surface-variant hover:text-secondary-fixed-dim transition-colors text-body-md" href="#">Discord</a>
+<a class="text-on-surface-variant hover:text-secondary-fixed-dim transition-colors text-body-md" href="#">Safety Center</a>
+</div>
+<div class="md:col-span-2 flex flex-col gap-4">
+<h4 class="text-on-surface font-bold text-label-sm uppercase tracking-widest">Resources</h4>
+<a class="text-on-surface-variant hover:text-secondary-fixed-dim transition-colors text-body-md" href="#">Community Guidelines</a>
+<a class="text-on-surface-variant hover:text-secondary-fixed-dim transition-colors text-body-md" href="#">Help Desk</a>
+<a class="text-on-surface-variant hover:text-secondary-fixed-dim transition-colors text-body-md" href="#">Skill Directory</a>
+</div>
+<div class="md:col-span-4 flex flex-col gap-6">
+<h4 class="text-on-surface font-bold text-label-sm uppercase tracking-widest">Newsletter</h4>
+<p class="text-on-surface-variant text-body-md">Get curated matches and weekly learning insights delivered to your inbox.</p>
+<div class="flex gap-2">
+<input class="bg-surface-container border border-outline-variant rounded-lg px-4 py-2 flex-1 focus:outline-none focus:ring-1 focus:ring-primary text-body-md" placeholder="email@example.com" type="email"/>
+<button class="bg-secondary-container text-on-secondary px-4 py-2 rounded-lg font-bold hover:brightness-110 transition-all active:scale-95">Join</button>
+</div>
+</div>
+<div class="col-span-full pt-12 border-t border-outline-variant/30 mt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+<p class="text-label-sm text-on-surface-variant">© 2024 SkillSwap Lab. Empowering the Spark of Learning.</p>
+<div class="flex gap-8">
+<a class="text-label-sm text-on-surface-variant hover:text-primary" href="#">Privacy Policy</a>
+<a class="text-label-sm text-on-surface-variant hover:text-primary" href="#">Terms of Service</a>
+<a class="text-label-sm text-on-surface-variant hover:text-primary" href="#">Cookie Settings</a>
+</div>
+</div>
+</div>
+</footer>
+<!-- FAB for quick action -->
+<button class="fixed bottom-8 right-8 w-16 h-16 rounded-full bg-primary-container text-on-primary-container shadow-2xl flex items-center justify-center hover:scale-110 active:scale-90 transition-transform neon-glow-cyan z-50">
+<span class="material-symbols-outlined text-[32px]" style="font-variation-settings: 'FILL' 1;">add</span>
+</button>
+<script>
+        // Simple Micro-interactions
+        document.querySelectorAll('.glass-card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                // Potential for adding small particle effects or GSAP animations here
+            });
+        });
+
+        // Search filtering simulation
+        const searchInput = document.querySelector('input[type="text"]');
+        if(searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                console.log('Searching for:', e.target.value);
+            });
+        }
+    </script>
+</body></html>

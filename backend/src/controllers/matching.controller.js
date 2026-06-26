@@ -181,8 +181,7 @@ const getNearbyLearners = async (req, res, next) => {
     const { data: candidates, error } = await supabaseAdmin
       .from('profiles')
       .select(`
-        id, full_name, avatar_url, avg_rating, total_sessions, reputation_points, location, city, state_code, latitude, longitude,
-        user_skills_wanted ( skill_id, skills ( name ) )
+        id, full_name, avatar_url, avg_rating, total_sessions, reputation_points, location, city, state_code, latitude, longitude
       `)
       .neq('id', userId)
       .eq('is_profile_complete', true)
@@ -190,12 +189,34 @@ const getNearbyLearners = async (req, res, next) => {
     if (error) throw error
     if (!candidates || candidates.length === 0) return res.status(200).json({ data: [] })
 
+    // Fetch skills wanted for all candidates
+    const candidateIds = candidates.map(c => c.id)
+    const wantedSkills = await db.select('user_skills_wanted', 'user_id, skill_id', { user_id: candidateIds })
+    
+    // Fetch skill definitions
+    let skillsMap = {}
+    if (wantedSkills.length > 0) {
+      const skillIds = [...new Set(wantedSkills.map(s => s.skill_id))]
+      const skills = await db.select('skills', 'id, name', { id: skillIds })
+      skillsMap = skills.reduce((acc, s) => ({ ...acc, [s.id]: s.name }), {})
+    }
+
+    // Map candidate skills in memory
+    const candidateSkillsWantedMap = wantedSkills.reduce((acc, ws) => {
+      if (!acc[ws.user_id]) acc[ws.user_id] = []
+      acc[ws.user_id].push({
+        skill_id: ws.skill_id,
+        skills: { name: skillsMap[ws.skill_id] }
+      })
+      return acc
+    }, {})
+
     const learners = []
     const socketServer = require('../websocket/socketServer.js')
     const active = socketServer.activeUsers
 
     for (const candidate of candidates) {
-      const wantedSkills = candidate.user_skills_wanted || []
+      const wantedSkills = candidateSkillsWantedMap[candidate.id] || []
       const matchingSkills = wantedSkills.filter(s => offeredSkillIds.includes(s.skill_id)).map(s => s.skills?.name).filter(Boolean)
       
       if (matchingSkills.length > 0) {
@@ -238,8 +259,7 @@ const getNearbyTeachers = async (req, res, next) => {
     const { data: candidates, error } = await supabaseAdmin
       .from('profiles')
       .select(`
-        id, full_name, avatar_url, avg_rating, total_sessions, reputation_points, location, city, state_code, latitude, longitude,
-        user_skills_offered ( skill_id, skills ( name ) )
+        id, full_name, avatar_url, avg_rating, total_sessions, reputation_points, location, city, state_code, latitude, longitude
       `)
       .neq('id', userId)
       .eq('is_profile_complete', true)
@@ -247,12 +267,34 @@ const getNearbyTeachers = async (req, res, next) => {
     if (error) throw error
     if (!candidates || candidates.length === 0) return res.status(200).json({ data: [] })
 
+    // Fetch skills offered for all candidates
+    const candidateIds = candidates.map(c => c.id)
+    const offeredSkills = await db.select('user_skills_offered', 'user_id, skill_id', { user_id: candidateIds })
+    
+    // Fetch skill definitions
+    let skillsMap = {}
+    if (offeredSkills.length > 0) {
+      const skillIds = [...new Set(offeredSkills.map(s => s.skill_id))]
+      const skills = await db.select('skills', 'id, name', { id: skillIds })
+      skillsMap = skills.reduce((acc, s) => ({ ...acc, [s.id]: s.name }), {})
+    }
+
+    // Map candidate skills in memory
+    const candidateSkillsOfferedMap = offeredSkills.reduce((acc, os) => {
+      if (!acc[os.user_id]) acc[os.user_id] = []
+      acc[os.user_id].push({
+        skill_id: os.skill_id,
+        skills: { name: skillsMap[os.skill_id] }
+      })
+      return acc
+    }, {})
+
     const teachers = []
     const socketServer = require('../websocket/socketServer.js')
     const active = socketServer.activeUsers
 
     for (const candidate of candidates) {
-      const offeredSkills = candidate.user_skills_offered || []
+      const offeredSkills = candidateSkillsOfferedMap[candidate.id] || []
       const matchingSkills = offeredSkills.filter(s => wantedSkillIds.includes(s.skill_id)).map(s => s.skills?.name).filter(Boolean)
 
       if (matchingSkills.length > 0) {

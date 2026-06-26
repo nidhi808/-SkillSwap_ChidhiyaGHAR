@@ -222,6 +222,53 @@ export const api = {
     },
   },
 
+  // --- CHAT (matches backend: /api/chat/*) ---
+  chat: {
+    async getConversations() {
+      return request('/api/chat/conversations');
+    },
+    async createConversation(participantId: string) {
+      return request('/api/chat/conversations', {
+        method: 'POST',
+        body: JSON.stringify({ participantId }),
+      });
+    },
+    async getMessages(conversationId: string, page = 1, limit = 50) {
+      return request(`/api/chat/conversations/${conversationId}/messages?page=${page}&limit=${limit}`);
+    },
+    async sendMessage(conversationId: string, data: { text?: string; attachment_url?: string; attachment_type?: string }) {
+      return request(`/api/chat/conversations/${conversationId}/messages`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+    },
+    async markRead(conversationId: string) {
+      return request(`/api/chat/conversations/${conversationId}/read`, { method: 'POST' });
+    },
+    async addReaction(messageId: string, emoji: string) {
+      return request(`/api/chat/messages/${messageId}/reaction`, {
+        method: 'POST',
+        body: JSON.stringify({ emoji }),
+      });
+    },
+  },
+
+  // --- REVIEWS (matches backend: /api/reviews/*) ---
+  reviews: {
+    async submitReview(data: { session_id: string; rating: number; comment: string }) {
+      return request('/api/reviews', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+    },
+    async getReviewsForUser(userId: string) {
+      return request(`/api/reviews/user/${userId}`);
+    },
+    async getMyReviews() {
+      return request('/api/reviews/my');
+    },
+  },
+
   // --- WHITEBOARD ---
   whiteboard: {
     async getState(sessionId: string) {
@@ -264,7 +311,7 @@ export const api = {
     },
   },
 
-  // --- FEED ---
+  // --- FEED (also used for leaderboard proxy) ---
   feed: {
     async getFeed(page = 1, limit = 20) {
       return request(`/api/feed?page=${page}&limit=${limit}`);
@@ -277,6 +324,13 @@ export const api = {
     },
     async getTrending(limit = 5) {
       return request(`/api/feed/trending?limit=${limit}`);
+    },
+  },
+
+  // --- LEADERBOARD (uses existing endpoints, no backend changes) ---
+  leaderboard: {
+    async getTopContributors() {
+      return request('/api/leaderboard');
     },
   },
 

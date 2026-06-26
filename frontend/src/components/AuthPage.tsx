@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { Mail, Lock, ShieldAlert, ArrowRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 
 interface AuthPageProps {
@@ -7,251 +6,302 @@ interface AuthPageProps {
   setVisorState: (state: 'eyes' | 'quote' | 'swap' | 'success' | 'camera') => void;
 }
 
-type AuthMode = 'login' | 'signup' | 'verify';
-
 export const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, setVisorState }) => {
-  const [mode, setMode] = useState<AuthMode>('login');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [code, setCode] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [isLoginMode, setIsLoginMode] = useState(true);
+   const [email, setEmail] = useState('');
+   const [password, setPassword] = useState('');
+   const [fullName, setFullName] = useState('');
+   const [error, setError] = useState('');
+   const [emailError, setEmailError] = useState('');
+   const [passwordError, setPasswordError] = useState('');
+   const [fullNameError, setFullNameError] = useState('');
+   const [isLoading, setIsLoading] = useState(false);
+   const [showPassword, setShowPassword] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
+   useEffect(() => {
+     setVisorState('eyes');
+     // Reset errors when switching modes
+     setEmailError('');
+     setPasswordError('');
+     setFullNameError('');
+   }, [isLoginMode, setVisorState]);
+
+   const validate = () => {
+     let isValid = true;
+     setEmailError('');
+     setPasswordError('');
+     setFullNameError('');
+
+     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+     if (!emailRegex.test(email)) {
+       setEmailError('Please enter a valid email address');
+       isValid = false;
+     }
+
+     if (password.length < 8) {
+       setPasswordError('Password must be at least 8 characters long');
+       isValid = false;
+     }
+
+     if (!isLoginMode && !fullName.trim()) {
+       setFullNameError('Full name is required');
+       isValid = false;
+     }
+
+     return isValid;
+   };
+
+   const handleSubmit = async (e: React.FormEvent) => {
+     e.preventDefault();
+     if (!validate()) return;
+
+     setError('');
+     setIsLoading(true);
+
 
     try {
-      if (mode === 'login') {
-        if (!email || !password) {
-          setError('All fields are required.');
-          setLoading(false);
-          return;
-        }
-        await api.auth.login({ email, password });
-        setVisorState('success');
-        setTimeout(() => {
+      if (isLoginMode) {
+        const res = await api.auth.login({ username: email, password });
+        if (res.access_token) {
+          localStorage.setItem('access_token', res.access_token);
+          setVisorState('success');
           onAuthSuccess();
-        }, 800);
-      } else if (mode === 'signup') {
-        if (!email || !password) {
-          setError('All fields are required.');
-          setLoading(false);
-          return;
+        } else {
+          setError('Login failed: No access token received');
         }
-        if (password.length < 6) {
-          setError('Password must be at least 6 characters.');
-          setLoading(false);
-          return;
+      } else {
+        // Sign Up mode
+        const regRes = await api.auth.register({ 
+          username: email, 
+          email: email, 
+          password: password, 
+          full_name: fullName 
+        });
+        if (regRes.user_id) {
+          const loginRes = await api.auth.login({ username: email, password });
+          if (loginRes.access_token) {
+            localStorage.setItem('access_token', loginRes.access_token);
+            setVisorState('success');
+            onAuthSuccess();
+          }
         }
-        // Sanitize username to conform to backend validation: 3-30 characters, alphanumeric/underscore only
-        let username = email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '_');
-        if (username.length < 3) {
-          username = username.padEnd(3, '0');
-        } else if (username.length > 30) {
-          username = username.substring(0, 30);
-        }
-        await api.auth.register({ email, password, username });
-        // Automatically log in the user immediately after successful registration
-        await api.auth.login({ email, password });
-        setVisorState('success');
-        setTimeout(() => {
-          onAuthSuccess();
-        }, 800);
-      } else if (mode === 'verify') {
-        if (!code) {
-          setError('Verification code is required.');
-          setLoading(false);
-          return;
-        }
-
-        // Submit the OTP code/token to verify email via native Supabase Auth
-        await api.auth.verifyEmail(email, code);
-
-        // Log user in automatically after registration
-        await api.auth.login({ email, password });
-        setVisorState('success');
-        setTimeout(() => {
-          onAuthSuccess();
-        }, 800);
       }
-
     } catch (err: any) {
-      setError(err.message || 'Authentication error.');
+      setError(err.response?.data?.detail || err.message || 'Authentication failed. Please try again.');
+      setVisorState('eyes');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  const handleOAuthMock = (provider: string) => {
-    // Initiate OAuth flow by redirecting
-    window.location.href = `http://localhost:4000/api/auth/oauth/${provider.toLowerCase()}`;
-  };
-
   return (
-    <div style={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: '80vh', zIndex: 10 }}>
-      <div 
-        className="glass-panel cyan-glow"
-        style={{ 
-          width: '100%', 
-          maxWidth: '420px', 
-          padding: '36px',
-          border: '1px solid rgba(0, 240, 255, 0.15)',
-          background: 'rgba(7, 7, 9, 0.85)'
-        }}
-      >
-        {/* Panel HUD Headers */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', paddingBottom: '12px' }}>
-          <span className="font-mono" style={{ color: 'var(--color-cyan)', fontSize: '0.85rem' }}>
-            [ AUTH_MODULE_v1.0 ]
-          </span>
-          <span className="font-mono" style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-            SECURE_ACCESS
-          </span>
+    <div className="auth-split-container">
+      {/* Left Panel - Branding & Features */}
+      <div className="auth-left-panel">
+        <div className="auth-left-glow auth-left-glow-cyan"></div>
+        <div className="auth-left-glow auth-left-glow-purple"></div>
+
+        <div className="auth-brand-block">
+          <div className="auth-brand-icon">
+            <span className="material-symbols-outlined text-primary">bolt</span>
+          </div>
+          <div>
+            <h1 className="auth-brand-title">SKILLSWAP</h1>
+            <p className="auth-brand-subtitle">THE SPARK ECOSYSTEM</p>
+          </div>
         </div>
 
-        <h2 style={{ fontSize: '1.75rem', marginBottom: '8px', color: '#fff' }} className="font-mono">
-          {mode === 'login' && 'LOGIN'}
-          {mode === 'signup' && 'CREATE ACCOUNT'}
-          {mode === 'verify' && 'VERIFY EMAIL'}
-        </h2>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', marginBottom: '24px' }}>
-          {mode === 'login' && 'Log in to connect to the peer grid.'}
-          {mode === 'signup' && 'Sign up to exchange skills with peers.'}
-          {mode === 'verify' && 'An verification code was simulated to your email.'}
-        </p>
+        <div className="auth-tagline">
+          <h2>Fuel the <span className="spark-gradient">Spark</span> of Peer Genius.</h2>
+          <p>Join a global network of 50k+ creators, engineers, and designers swapping mastery for curiosity.</p>
+        </div>
 
-        {error && (
-          <div 
-            style={{ 
-              background: 'rgba(255, 0, 0, 0.08)', 
-              border: '1px solid rgba(255, 0, 0, 0.3)', 
-              color: '#ff4d4d', 
-              padding: '12px', 
-              borderRadius: '4px', 
-              marginBottom: '20px',
-              fontSize: '0.85rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}
-            className="font-mono"
-          >
-            <ShieldAlert size={16} />
-            {error}
+        <div className="auth-features-carousel">
+          <div className={`auth-feature-card ${isLoginMode ? '' : 'auth-feature-active'}`}>
+            <span className="material-symbols-outlined auth-feature-icon">psychology</span>
+            <div>
+              <div className="auth-feature-title">SMART MATCHING</div>
+              <div className="auth-feature-desc">AI-driven peer pairings based on your unique skill graph.</div>
+            </div>
           </div>
-        )}
+          <div className={`auth-feature-card ${isLoginMode ? 'auth-feature-active' : ''}`}>
+            <span className="material-symbols-outlined auth-feature-icon">sync_alt</span>
+            <div>
+              <div className="auth-feature-title">DIRECT SWAPS</div>
+              <div className="auth-feature-desc">No money, just knowledge. Exchange hours for expertise.</div>
+            </div>
+          </div>
+          <div className={`auth-feature-card ${!isLoginMode ? 'auth-feature-active' : ''}`}>
+            <span className="material-symbols-outlined auth-feature-icon">school</span>
+            <div className="auth-feature-desc">Continuous growth through real-world collaboration.</div>
+            <div className="auth-feature-title">PEER LEARNING</div>
+          </div>
+        </div>
 
-        <form onSubmit={handleSubmit}>
-          {mode !== 'verify' ? (
-            <>
-              <div style={{ marginBottom: '20px' }}>
-                <label className="hud-label">Email Address</label>
-                <div style={{ position: 'relative' }}>
-                  <input 
-                    type="email" 
-                    className="hud-input" 
-                    placeholder="student@college.edu" 
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    style={{ paddingLeft: '40px' }}
-                  />
-                  <Mail size={16} style={{ position: 'absolute', left: '14px', top: '15px', color: 'var(--text-muted)' }} />
-                </div>
-              </div>
+        <div className="auth-stats-bar">
+          <div className="auth-stat">
+            <span className="auth-stat-num">50k+</span>
+            <span className="auth-stat-label">EXPERTS</span>
+          </div>
+          <div className="auth-stat-divider"></div>
+          <div className="auth-stat">
+            <span className="auth-stat-num">120+</span>
+            <span className="auth-stat-label">SKILLS</span>
+          </div>
+          <div className="auth-stat-divider"></div>
+          <div className="auth-stat">
+            <span className="auth-stat-num">24/7</span>
+            <span className="auth-stat-label">ACCESS</span>
+          </div>
+        </div>
+      </div>
 
-              <div style={{ marginBottom: '28px' }}>
-                <label className="hud-label">Password</label>
-                <div style={{ position: 'relative' }}>
-                  <input 
-                    type="password" 
-                    className="hud-input" 
-                    placeholder="••••••••" 
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    style={{ paddingLeft: '40px' }}
-                  />
-                  <Lock size={16} style={{ position: 'absolute', left: '14px', top: '15px', color: 'var(--text-muted)' }} />
-                </div>
-              </div>
-            </>
-          ) : (
-            <div style={{ marginBottom: '28px' }}>
-              <label className="hud-label">Verification Code (Enter "12345")</label>
-              <input 
-                type="text" 
-                className="hud-input" 
-                placeholder="12345" 
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                maxLength={5}
-                style={{ textAlign: 'center', letterSpacing: '0.5em', fontSize: '1.2rem' }}
-              />
+      {/* Right Panel - Auth Form */}
+      <div className="auth-right-panel">
+        <div className="auth-form-container">
+          <div className="auth-hud-header">
+            <h2 className="auth-form-title">{isLoginMode ? 'Welcome Back' : 'Join the Lab'}</h2>
+            <span className="font-mono text-[10px] text-primary/50">AUTH_MODE: {isLoginMode ? 'LOGIN' : 'REGISTER'}</span>
+          </div>
+
+          <div className="auth-mode-tabs">
+            <button 
+              className={`auth-tab ${isLoginMode ? 'auth-tab-active' : ''}`}
+              onClick={() => setIsLoginMode(true)}
+            >
+              <span className="material-symbols-outlined text-[16px]">login</span>
+              Login
+            </button>
+            <button 
+              className={`auth-tab ${!isLoginMode ? 'auth-tab-active' : ''}`}
+              onClick={() => setIsLoginMode(false)}
+            >
+              <span className="material-symbols-outlined text-[16px]">person_add</span>
+              Sign Up
+            </button>
+          </div>
+
+          {error && (
+            <div className="auth-error-banner">
+              <span className="material-symbols-outlined text-[18px]">error</span>
+              {error}
             </div>
           )}
 
-          <button 
-            type="submit" 
-            className="cyber-button" 
-            disabled={loading}
-            style={{ width: '100%', justifyContent: 'center', marginBottom: '20px', opacity: loading ? 0.6 : 1 }}
-          >
-            {loading ? 'TRANSMITTING...' : (
-              <>
-                {mode === 'login' && 'INITIALIZE SESSION'}
-                {mode === 'signup' && 'SEND VERIFICATION'}
-                {mode === 'verify' && 'CONFIRM AUTHENTICATION'}
-                <ArrowRight size={16} />
-              </>
-            )}
-          </button>
-        </form>
+          <form className="auth-form" onSubmit={handleSubmit}>
+             {!isLoginMode && (
+               <div className={`auth-field ${fullNameError ? 'auth-field-error' : ''}`}>
+                 <label className="hud-label" htmlFor="fullName">Full Name</label>
+                 <div className="auth-input-wrap">
+                   <span className="material-symbols-outlined auth-input-icon">person</span>
+                   <input
+                     className={`hud-input auth-input-padded ${fullNameError ? 'auth-input-error' : ''}`}
+                     id="fullName"
+                     type="text"
+                     placeholder="Alex Rivera"
+                     value={fullName}
+                     onChange={(e) => setFullName(e.target.value)}
+                     required
+                   />
+                 </div>
+                 {fullNameError && <span className="auth-error-text">{fullNameError}</span>}
+               </div>
+             )}
+ 
+             <div className={`auth-field ${emailError ? 'auth-field-error' : ''}`}>
+               <label className="hud-label" htmlFor="email">Email Address</label>
+               <div className="auth-input-wrap">
+                 <span className="material-symbols-outlined auth-input-icon">mail</span>
+                 <input
+                   className={`hud-input auth-input-padded ${emailError ? 'auth-input-error' : ''}`}
+                   id="email"
+                   type="email"
+                   placeholder="name@example.com"
+                   value={email}
+                   onChange={(e) => setEmail(e.target.value)}
+                   required
+                 />
+               </div>
+               {emailError && <span className="auth-error-text">{emailError}</span>}
+             </div>
+ 
+             <div className={`auth-field ${passwordError ? 'auth-field-error' : ''}`}>
+               <label className="hud-label" htmlFor="password">Master Password</label>
+               <div className="auth-input-wrap">
+                 <span className="material-symbols-outlined auth-input-icon">lock</span>
+                 <input
+                   className={`hud-input auth-input-padded ${!showPassword ? 'pr-12' : ''} ${passwordError ? 'auth-input-error' : ''}`}
+                   id="password"
+                   type={showPassword ? 'text' : 'password'}
+                   placeholder="••••••••"
+                   value={password}
+                   onChange={(e) => setPassword(e.target.value)}
+                   required
+                 />
+                 <button
+                   type="button"
+                   className="auth-toggle-pw"
+                   onClick={() => setShowPassword(!showPassword)}
+                 >
+                   <span className="material-symbols-outlined text-[20px]">
+                     {showPassword ? 'visibility_off' : 'visibility'}
+                   </span>
+                 </button>
+               </div>
+               {passwordError && <span className="auth-error-text">{passwordError}</span>}
+             </div>
 
-        {mode !== 'verify' && (
-          <>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '24px 0' }}>
-              <div style={{ flex: 1, height: '1px', background: 'rgba(255, 255, 255, 0.08)' }}></div>
-              <span className="font-mono" style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>OR INTERFACE WITH</span>
-              <div style={{ flex: 1, height: '1px', background: 'rgba(255, 255, 255, 0.08)' }}></div>
-            </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '24px' }}>
-              <button className="cyber-button font-mono" style={{ padding: '10px', fontSize: '0.8rem', justifyContent: 'center', gap: '8px' }} onClick={() => handleOAuthMock('Google')}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12.24 10.285V14.4h6.887c-.648 2.41-2.519 4.114-6.887 4.114-4.695 0-8.503-3.808-8.503-8.503s3.808-8.503 8.503-8.503c2.202 0 4.21.754 5.802 2.202l3.037-3.037C18.243 1.096 15.357 0 12.24 0 5.58 0 0 5.58 0 12.24s5.58 12.24 12.24 12.24c6.762 0 11.76-4.762 11.76-11.96 0-.776-.07-1.536-.188-2.235H12.24z"/></svg> GOOGLE
-              </button>
-              <button className="cyber-button font-mono" style={{ padding: '10px', fontSize: '0.8rem', justifyContent: 'center', gap: '8px' }} onClick={() => handleOAuthMock('GitHub')}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.11.82-.26.82-.577v-2.234c-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22v3.293c0 .319.22.694.825.576C20.565 21.795 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg> GITHUB
-              </button>
-            </div>
-          </>
-        )}
+            <button
+              className="cyber-button auth-submit-btn"
+              type="submit"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <div className="auth-spinner-wrap">
+                  <div className="auth-spinner"></div>
+                  <span>Initializing...</span>
+                </div>
+              ) : (
+                <>
+                  {isLoginMode ? 'Enter the Lab' : 'Initialize Profile'}
+                  <span className="material-symbols-outlined text-[18px]">bolt</span>
+                </>
+              )}
+            </button>
+          </form>
 
-        <div style={{ textAlign: 'center' }}>
-          {mode === 'login' ? (
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-              New to the grid?{' '}
+          <div className="auth-divider">
+            <span>OR CONTINUE WITH</span>
+            <div className="auth-divider-line"></div>
+          </div>
+
+          <div className="auth-oauth-row">
+            <button className="auth-oauth-btn">
+              <img className="w-5 h-5" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1sHaGbKzjUu1NOvH8kk-U5je-0aWip-uLfnw-Z0NiMvJXkbsFR3GQwRR25V4ITJVmzfD_8R8s_qJkxpTxabPI_DiwvqVb6s0zOFaqRULtVAp0jWzpyK2gICPMo7DqhP4YD1-HlsaRPAtGfCeoS32KSzM9LuGqeLQT2DQ8TXGfL7UXqEX9WYKC9_2bNnAxxjTo3kDPnOAh4-g_G4mRIoHeLEHQLPDH0y_dA3rqs1knrsS9qJBV8E7panqX721H4lkYGnkoMl95UuY" alt="Google" />
+              <span>Google</span>
+            </button>
+            <button className="auth-oauth-btn">
+              <img className="w-5 h-5" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCqhICjbiyhEL1GyFajl3qIaWU99Aek7Ge4iziRmS4Sg7FYMA1mumWn7ho2H8oH1TwGtc35D0IIZXdXwE5LSt47CCXu3nZTPStAwYJFokExZRC2gC5CksWdBFXpf-IMWkZJVK8KbEfnqJks5tIToOi9Q1pLT_i78Xf07cEM1x-sbPqrngbiknkSaGubpG0WJ0Hblumwg6sMaYKvXi2_ysMCzlOJExn6Jx4B76ol6E-BC-11p6BlqHjEFPQj-s7n18w-k8iBL1jv5hc" alt="GitHub" />
+              <span>GitHub</span>
+            </button>
+          </div>
+
+          <div className="auth-switch-mode">
+            <p>
+              {isLoginMode ? "Don't have an account yet?" : "Already in the lab?"}{' '}
               <span 
-                style={{ color: 'var(--color-cyan)', cursor: 'pointer', textDecoration: 'underline' }} 
-                onClick={() => setMode('signup')}
+                className="auth-switch-link"
+                onClick={() => setIsLoginMode(!isLoginMode)}
               >
-                Sign Up
+                {isLoginMode ? 'Sign up for free' : 'Sign in'}
               </span>
             </p>
-          ) : (
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-              Already registered?{' '}
-              <span 
-                style={{ color: 'var(--color-cyan)', cursor: 'pointer', textDecoration: 'underline' }} 
-                onClick={() => setMode('login')}
-              >
-                Log In
-              </span>
-            </p>
-          )}
+          </div>
         </div>
       </div>
     </div>
   );
 };
+
 export default AuthPage;

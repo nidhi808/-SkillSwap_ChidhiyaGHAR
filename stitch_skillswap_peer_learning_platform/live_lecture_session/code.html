@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SkillSwap - Live Lecture</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&amp;family=Hanken+Grotesk:wght@400;500;600&amp;family=JetBrains+Mono:wght@500&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@100..900&amp;family=JetBrains+Mono:wght@100..900&amp;family=Sora:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(22, 27, 34, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .neon-glow-cyan {
+            box-shadow: 0 0 15px rgba(0, 219, 233, 0.3);
+        }
+        .neon-glow-purple {
+            box-shadow: 0 0 15px rgba(125, 1, 177, 0.3);
+        }
+        .video-gradient {
+            background: linear-gradient(0deg, rgba(13, 17, 23, 0.8) 0%, rgba(13, 17, 23, 0) 40%);
+        }
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #111318;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333539;
+            border-radius: 10px;
+        }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary-container": "#006970",
+                    "on-primary": "#00363a",
+                    "tertiary": "#fff3f3",
+                    "surface-variant": "#333539",
+                    "on-tertiary-container": "#be003b",
+                    "on-error": "#690005",
+                    "error": "#ffb4ab",
+                    "surface-container-low": "#1a1c20",
+                    "surface-container": "#1e2024",
+                    "outline": "#849495",
+                    "surface-container-high": "#282a2e",
+                    "surface-container-lowest": "#0c0e12",
+                    "on-secondary-fixed": "#310048",
+                    "surface-bright": "#37393e",
+                    "secondary-fixed": "#f6d9ff",
+                    "on-secondary-fixed-variant": "#7200a3",
+                    "surface": "#111318",
+                    "secondary-container": "#7d01b1",
+                    "surface-dim": "#111318",
+                    "primary-fixed-dim": "#00dbe9",
+                    "inverse-primary": "#006970",
+                    "tertiary-container": "#ffcdcf",
+                    "on-tertiary-fixed": "#40000e",
+                    "tertiary-fixed": "#ffdadb",
+                    "inverse-surface": "#e2e2e8",
+                    "secondary": "#e9b3ff",
+                    "tertiary-fixed-dim": "#ffb2b7",
+                    "outline-variant": "#3b494b",
+                    "on-primary-fixed-variant": "#004f54",
+                    "on-background": "#e2e2e8",
+                    "primary": "#dbfcff",
+                    "primary-container": "#00f0ff",
+                    "secondary-fixed-dim": "#e9b3ff",
+                    "surface-container-highest": "#333539",
+                    "on-tertiary": "#67001c",
+                    "on-secondary": "#510074",
+                    "inverse-on-surface": "#2f3035",
+                    "on-tertiary-fixed-variant": "#91002b",
+                    "on-surface-variant": "#b9cacb",
+                    "on-secondary-container": "#e5a9ff",
+                    "error-container": "#93000a",
+                    "on-surface": "#e2e2e8",
+                    "on-primary-fixed": "#002022",
+                    "primary-fixed": "#7df4ff",
+                    "on-error-container": "#ffdad6",
+                    "background": "#111318",
+                    "surface-tint": "#00dbe9"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-desktop": "64px",
+                    "gutter": "24px",
+                    "margin-mobile": "16px",
+                    "section-gap": "120px",
+                    "container-max": "1280px",
+                    "base": "8px"
+            },
+            "fontFamily": {
+                    "headline-xl-mobile": ["Sora"],
+                    "body-lg": ["Hanken Grotesk"],
+                    "headline-md": ["Sora"],
+                    "label-sm": ["JetBrains Mono"],
+                    "display-lg": ["Sora"],
+                    "headline-xl": ["Sora"],
+                    "body-md": ["Hanken Grotesk"]
+            },
+            "fontSize": {
+                    "headline-xl-mobile": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "500"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                    "display-lg": ["64px", {"lineHeight": "72px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-xl": ["40px", {"lineHeight": "48px", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-hidden h-screen flex flex-col">
+<!-- Top Navigation Anchor -->
+<nav class="w-full top-0 sticky border-b border-outline-variant bg-surface h-20 z-50">
+<div class="max-w-container-max mx-auto px-margin-desktop flex justify-between items-center h-full">
+<div class="flex items-center gap-8">
+<span class="font-headline-md text-headline-md font-bold text-primary">SkillSwap</span>
+<div class="hidden md:flex gap-6 items-center">
+<a class="text-on-surface-variant font-body-md hover:text-primary transition-colors duration-200" href="#">Browse Skills</a>
+<a class="text-on-surface-variant font-body-md hover:text-primary transition-colors duration-200" href="#">My Matches</a>
+<a class="text-primary font-bold border-b-2 border-primary pb-1 font-body-md" href="#">Schedule</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex flex-col items-end mr-2">
+<span class="font-label-sm text-label-sm text-primary uppercase">Live Now</span>
+<span class="font-body-md text-body-md font-bold">Advanced UI Design Lab</span>
+</div>
+<div class="w-10 h-10 rounded-full border-2 border-primary-container overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional close-up portrait of a female UI designer with glasses, smiling confidently against a minimalist dark studio background. The lighting is dramatic and cinematic, with a soft cyan glow from the side reflecting on her face, echoing the SkillSwap brand identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBy84ebUN3-50tnE8-8C-zclpqoNdD6SWq7dG34pp8HrlVdF_ZNXc4NCJ50miEjQdEcxKRqAQYpGUk4Qj5kHRchBGpgdMzUq7lJRWzkwcjjd5q0wVGlNlam8d3r0GjITxWngtj3hhbsYXyZ3MELnycdMP_W1HK7yF-hNauQIH2PyqTYdiiMaMcm4-exoSKOSiG61yv7AKoRKuhaAKNY8Wp63uM7Gr8fs5ZDPHKQ_ACdNS0Cl_YeQA7D3-35C2lSetIU_TClKd0YbR4"/>
+</div>
+</div>
+</div>
+</nav>
+<!-- Main Workspace Container -->
+<main class="flex-1 flex overflow-hidden p-4 gap-4 relative">
+<!-- Left Side: Video Canvas -->
+<div class="flex-1 flex flex-col relative rounded-xl overflow-hidden bg-surface-container-lowest">
+<!-- Large Main Video Feed -->
+<div class="absolute inset-0 w-full h-full">
+<img class="w-full h-full object-cover" data-alt="A high-definition wide shot of a professional tech lecturer speaking from a modern home office studio. In the background, there are blurred bookshelves with warm ambient lighting and a neon purple sign. The lecturer is gesturing at a high-end monitor, with soft cyan lighting creating a premium, modern-systematic aesthetic consistent with a top-tier EdTech platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCw35Hk3pAUw4k6XrnZV5wG7A9Ghhb5aGC88s6K2QFVz9_d1216DEqjq0G4e38S9ggsBS6L_4xF9hqaFUmwuJKNvIddE18kot1yPf9wKBj2fr6eOfKGgxBob8N6--G_GhlvrVFeBnQ8AowuBo-CWye5tQ0HgRM7N8AVW7BWcaAyq4GGby-fw9tHPfbc0m5fNXA-19KVIkZJqhqZ0JyiF9bcKRLO31ec2b6rhQ8srAHkWk3ujxizJ2mlcyKsZ33w2hLxRsExGaCYhPE"/>
+<div class="absolute inset-0 video-gradient pointer-events-none"></div>
+<!-- Presenter Name Overlay -->
+<div class="absolute top-6 left-6 flex items-center gap-3 glass-panel px-4 py-2 rounded-full">
+<div class="w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_8px_#00dbe9]"></div>
+<span class="font-label-sm text-label-sm text-on-surface tracking-widest">DR. SARAH CHEN • HOST</span>
+</div>
+</div>
+<!-- Self-View Corner Docked (Floating) -->
+<div class="absolute top-6 right-6 w-48 h-32 rounded-xl overflow-hidden glass-panel neon-glow-cyan transform transition-transform hover:scale-105 cursor-move z-20">
+<img class="w-full h-full object-cover" data-alt="A high-quality webcamera feed of a young adult student sitting in a dimly lit room, illuminated by the soft blue glow of their laptop screen. The student is focused and engaged, looking slightly off-camera as if participating in a collaborative session. The background is simple and clean, following the cyber-minimalist vibe." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDUJaTcAO_BiGmvSDfDcuSoxTFU4BFXSpRpATtAUWdoDCdNmYKsf_q5SinFxEsYAGfWP-RUhApoAwbAQxCQwioqC7E3ofKsLayWFWqqMLan4ogUuOH_xEEPbfvKgRZEf-t6idGEdSjthtxK-uzrqlMq9EVJ3PuhiUgjFCvYYTZah1FnMRMRYIVAxzKyNbyifpYeO7_sn0MR9Ob-hICEFuUHVVSdGGxu08XDkEgAFn86tw3OeuSkX-JvFQtm4ZRZifO1weV3I8GJCVU"/>
+<div class="absolute bottom-2 left-2 flex items-center gap-1 bg-black/50 px-2 py-0.5 rounded text-[10px] font-label-sm uppercase">
+<span class="material-symbols-outlined text-[12px]">mic</span>
+                    You (Learning)
+                </div>
+</div>
+<!-- Central Content Display (If Whiteboard Active) -->
+<div class="hidden absolute inset-12 glass-panel rounded-2xl flex flex-col items-center justify-center border-dashed border-primary/30 z-10" id="whiteboard-overlay">
+
+<div class="absolute top-4 left-1/2 -translate-x-1/2 bg-surface-container px-6 py-2 rounded-full border border-outline-variant flex gap-4">
+<button class="p-2 hover:bg-primary/20 rounded-lg text-primary transition-all"><span class="material-symbols-outlined">edit</span></button>
+<button class="p-2 hover:bg-primary/20 rounded-lg text-on-surface-variant"><span class="material-symbols-outlined">rectangle</span></button>
+<button class="p-2 hover:bg-primary/20 rounded-lg text-on-surface-variant"><span class="material-symbols-outlined">text_fields</span></button>
+<button class="p-2 hover:bg-primary/20 rounded-lg text-on-surface-variant"><span class="material-symbols-outlined">image</span></button>
+</div>
+</div>
+<!-- Bottom Floating Controls -->
+<div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-6 glass-panel px-8 py-4 rounded-3xl z-30">
+<button class="group flex flex-col items-center gap-1">
+<div class="w-12 h-12 rounded-full flex items-center justify-center bg-surface-variant group-hover:bg-primary transition-all duration-300 group-hover:text-on-primary">
+<span class="material-symbols-outlined">mic</span>
+</div>
+<span class="font-label-sm text-[10px] text-on-surface-variant uppercase">Mute</span>
+</button>
+<button class="group flex flex-col items-center gap-1">
+<div class="w-12 h-12 rounded-full flex items-center justify-center bg-surface-variant group-hover:bg-primary transition-all duration-300 group-hover:text-on-primary">
+<span class="material-symbols-outlined">videocam</span>
+</div>
+<span class="font-label-sm text-[10px] text-on-surface-variant uppercase">Camera</span>
+</button>
+<button class="group flex flex-col items-center gap-1">
+<div class="w-12 h-12 rounded-full flex items-center justify-center bg-surface-variant group-hover:bg-primary transition-all duration-300 group-hover:text-on-primary">
+<span class="material-symbols-outlined">screen_share</span>
+</div>
+<span class="font-label-sm text-[10px] text-on-surface-variant uppercase">Share</span>
+</button>
+<div class="w-[1px] h-10 bg-outline-variant/30"></div>
+<button class="group flex flex-col items-center gap-1" id="toggle-whiteboard">
+<div class="w-12 h-12 rounded-full flex items-center justify-center bg-secondary-container text-white neon-glow-purple transition-all duration-300 hover:scale-110">
+<span class="material-symbols-outlined">draw</span>
+</div>
+<span class="font-label-sm text-[10px] text-secondary uppercase">Whiteboard</span>
+</button>
+<div class="w-[1px] h-10 bg-outline-variant/30"></div>
+<button class="group flex flex-col items-center gap-1">
+<div class="w-14 h-14 rounded-full flex items-center justify-center bg-error-container text-white transition-all duration-300 hover:scale-110 active:scale-95">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">call_end</span>
+</div>
+<span class="font-label-sm text-[10px] text-error uppercase font-bold">Leave</span>
+</button>
+</div>
+</div>
+<!-- Right Side: Interaction Sidebar -->
+<aside class="w-80 flex flex-col gap-4">
+<!-- Collaborative Tools Toggle -->
+<div class="glass-panel rounded-xl p-4 flex justify-between items-center">
+<div class="flex gap-2">
+<button class="px-4 py-2 bg-primary text-on-primary rounded-lg font-label-sm text-[11px] uppercase tracking-wider font-bold" id="chat-tab">Chat</button>
+<button class="px-4 py-2 bg-surface-variant text-on-surface-variant rounded-lg font-label-sm text-[11px] uppercase tracking-wider transition-colors hover:bg-surface-container-high" id="participants-tab">Users</button>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">groups</span>
+<span class="font-label-sm text-sm">142</span>
+</div>
+</div>
+<!-- Chat Content -->
+<div class="glass-panel rounded-xl flex-1 flex flex-col overflow-hidden" id="chat-container">
+<div class="p-4 border-b border-outline-variant bg-surface-container-low flex items-center justify-between">
+<h3 class="font-label-sm text-on-surface uppercase tracking-widest">Live Discussion</h3>
+<span class="material-symbols-outlined text-primary text-[18px]">bolt</span>
+</div>
+<div class="flex-1 overflow-y-auto p-4 space-y-6">
+<!-- Chat Message (Other) -->
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-[11px] text-secondary">MARCUS VANE</span>
+<span class="text-[10px] text-on-surface-variant opacity-60">14:02</span>
+</div>
+<div class="bg-surface-container p-3 rounded-tr-xl rounded-br-xl rounded-bl-xl border-l-2 border-secondary text-body-md text-sm">
+                            Can you explain the grid constraints for mobile again? The 8px factor is clear, but I missed the gutter size.
+                        </div>
+</div>
+<!-- Chat Message (Teacher Response) -->
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-[11px] text-primary">DR. SARAH CHEN</span>
+<div class="px-1.5 py-0.5 rounded bg-primary-fixed-dim/20 text-primary-fixed-dim text-[8px] font-bold">LECTURER</div>
+</div>
+<div class="bg-primary/5 p-3 rounded-tr-xl rounded-br-xl rounded-bl-xl border-l-2 border-primary text-body-md text-sm">
+                            Sure! Mobile is a 4-column fluid grid with 16px gutters and 16px margins.
+                        </div>
+</div>
+<!-- Chat Message (System) -->
+<div class="text-center py-2">
+<span class="text-[10px] font-label-sm text-on-surface-variant/40 tracking-[0.2em] uppercase">Alex Joined the lab</span>
+</div>
+<!-- Chat Message (Me) -->
+<div class="flex flex-col gap-1 items-end">
+<div class="flex items-center gap-2">
+<span class="text-[10px] text-on-surface-variant opacity-60">14:05</span>
+<span class="font-label-sm text-[11px] text-primary-container">YOU</span>
+</div>
+<div class="bg-surface-container-high p-3 rounded-tl-xl rounded-br-xl rounded-bl-xl text-body-md text-sm">
+                            Thanks Sarah! That helps a lot with the responsive breakpoints.
+                        </div>
+</div>
+</div>
+<!-- Chat Input -->
+<div class="p-4 bg-surface-container-lowest">
+<div class="relative">
+<input class="w-full bg-surface border border-outline-variant rounded-xl px-4 py-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all outline-none" placeholder="Type a message..." type="text"/>
+<button class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-primary-container hover:scale-110 transition-transform">
+<span class="material-symbols-outlined">send</span>
+</button>
+</div>
+</div>
+</div>
+</aside>
+</main>
+<!-- Footer Identity -->
+<footer class="w-full bg-surface-container-lowest py-4 border-t border-outline-variant">
+<div class="max-w-container-max mx-auto px-margin-desktop flex justify-between items-center">
+<p class="text-on-surface-variant font-label-sm text-[10px] uppercase tracking-widest opacity-60">© 2024 SkillSwap Lab. Empowering the Spark of Learning.</p>
+<div class="flex gap-6">
+<a class="text-on-surface-variant font-label-sm text-[10px] uppercase hover:text-secondary-fixed-dim transition-colors" href="#">Safety Center</a>
+<a class="text-on-surface-variant font-label-sm text-[10px] uppercase hover:text-secondary-fixed-dim transition-colors" href="#">Help Desk</a>
+</div>
+</div>
+</footer>
+<script>
+        // Tab switching logic
+        const chatTab = document.getElementById('chat-tab');
+        const participantsTab = document.getElementById('participants-tab');
+        
+        chatTab.addEventListener('click', () => {
+            chatTab.classList.add('bg-primary', 'text-on-primary');
+            chatTab.classList.remove('bg-surface-variant', 'text-on-surface-variant');
+            participantsTab.classList.add('bg-surface-variant', 'text-on-surface-variant');
+            participantsTab.classList.remove('bg-primary', 'text-on-primary');
+        });
+
+        participantsTab.addEventListener('click', () => {
+            participantsTab.classList.add('bg-primary', 'text-on-primary');
+            participantsTab.classList.remove('bg-surface-variant', 'text-on-surface-variant');
+            chatTab.classList.add('bg-surface-variant', 'text-on-surface-variant');
+            chatTab.classList.remove('bg-primary', 'text-on-primary');
+        });
+
+        // Whiteboard Toggle
+        const wbToggle = document.getElementById('toggle-whiteboard');
+        const wbOverlay = document.getElementById('whiteboard-overlay');
+        let wbActive = false;
+
+        wbToggle.addEventListener('click', () => {
+            wbActive = !wbActive;
+            if(wbActive) {
+                wbOverlay.classList.remove('hidden');
+                wbToggle.querySelector('div').classList.add('bg-primary-container', 'text-on-primary');
+                wbToggle.querySelector('div').classList.remove('bg-secondary-container');
+            } else {
+                wbOverlay.classList.add('hidden');
+                wbToggle.querySelector('div').classList.remove('bg-primary-container', 'text-on-primary');
+                wbToggle.querySelector('div').classList.add('bg-secondary-container');
+            }
+        });
+
+        // Simple draggable self-view (Mobile friendly restricted)
+        const selfView = document.querySelector('.cursor-move');
+        let isDragging = false;
+        let currentX;
+        let currentY;
+        let initialX;
+        let initialY;
+        let xOffset = 0;
+        let yOffset = 0;
+
+        selfView.addEventListener("mousedown", dragStart);
+        document.addEventListener("mouseup", dragEnd);
+        document.addEventListener("mousemove", drag);
+
+        function dragStart(e) {
+            initialX = e.clientX - xOffset;
+            initialY = e.clientY - yOffset;
+            if (e.target === selfView || selfView.contains(e.target)) {
+                isDragging = true;
+            }
+        }
+
+        function dragEnd(e) {
+            initialX = currentX;
+            initialY = currentY;
+            isDragging = false;
+        }
+
+        function drag(e) {
+            if (isDragging) {
+                e.preventDefault();
+                currentX = e.clientX - initialX;
+                currentY = e.clientY - initialY;
+                xOffset = currentX;
+                yOffset = currentY;
+                setTranslate(currentX, currentY, selfView);
+            }
+        }
+
+        function setTranslate(xPos, yPos, el) {
+            el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0) scale(1.05)`;
+        }
+    </script>
+</body></html>

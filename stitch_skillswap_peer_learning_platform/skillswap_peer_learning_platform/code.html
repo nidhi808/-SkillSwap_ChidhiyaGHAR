@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SkillSwap | Master Any Skill</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&amp;family=Hanken+Grotesk:wght@400;500;600&amp;family=JetBrains+Mono:wght@500&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@100..900&amp;family=JetBrains+Mono:wght@100..900&amp;family=Sora:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-error": "#690005",
+                    "surface-container-highest": "#333539",
+                    "error-container": "#93000a",
+                    "on-tertiary-fixed": "#40000e",
+                    "on-surface-variant": "#b9cacb",
+                    "on-secondary-fixed": "#310048",
+                    "outline": "#849495",
+                    "on-error-container": "#ffdad6",
+                    "primary": "#dbfcff",
+                    "surface-bright": "#37393e",
+                    "surface-tint": "#00dbe9",
+                    "surface-variant": "#333539",
+                    "on-background": "#e2e2e8",
+                    "tertiary-fixed": "#ffdadb",
+                    "tertiary-container": "#ffcdcf",
+                    "surface-container-high": "#282a2e",
+                    "secondary-fixed-dim": "#e9b3ff",
+                    "surface-container-lowest": "#0c0e12",
+                    "tertiary": "#fff3f3",
+                    "on-surface": "#e2e2e8",
+                    "primary-fixed": "#7df4ff",
+                    "surface": "#111318",
+                    "error": "#ffb4ab",
+                    "primary-fixed-dim": "#00dbe9",
+                    "secondary-container": "#7d01b1",
+                    "inverse-primary": "#006970",
+                    "inverse-on-surface": "#2f3035",
+                    "on-primary-fixed-variant": "#004f54",
+                    "primary-container": "#00f0ff",
+                    "tertiary-fixed-dim": "#ffb2b7",
+                    "on-tertiary": "#67001c",
+                    "outline-variant": "#3b494b",
+                    "surface-dim": "#111318",
+                    "secondary": "#e9b3ff",
+                    "on-secondary-container": "#e5a9ff",
+                    "on-primary": "#00363a",
+                    "on-tertiary-fixed-variant": "#91002b",
+                    "secondary-fixed": "#f6d9ff",
+                    "inverse-surface": "#e2e2e8",
+                    "on-secondary-fixed-variant": "#7200a3",
+                    "background": "#111318",
+                    "on-tertiary-container": "#be003b",
+                    "surface-container": "#1e2024",
+                    "surface-container-low": "#1a1c20",
+                    "on-secondary": "#510074",
+                    "on-primary-container": "#006970",
+                    "on-primary-fixed": "#002022"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-mobile": "16px",
+                    "section-gap": "120px",
+                    "base": "8px",
+                    "margin-desktop": "64px",
+                    "gutter": "24px",
+                    "container-max": "1280px"
+            },
+            "fontFamily": {
+                    "headline-xl": ["Sora"],
+                    "body-md": ["Hanken Grotesk"],
+                    "body-lg": ["Hanken Grotesk"],
+                    "headline-md": ["Sora"],
+                    "headline-xl-mobile": ["Sora"],
+                    "display-lg": ["Sora"],
+                    "label-sm": ["JetBrains Mono"]
+            },
+            "fontSize": {
+                    "headline-xl": ["40px", {"lineHeight": "48px", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "500"}],
+                    "headline-xl-mobile": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                    "display-lg": ["64px", {"lineHeight": "72px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>body {
+    background-color: #0D1117;
+    color: #e2e2e8;
+    overflow-x: hidden
+    }
+.neon-glow {
+    text-shadow: 0 0 10px rgba(0, 219, 233, 0.4)
+    }
+.ambient-glow-cyan {
+    box-shadow: 0 0 30px rgba(0, 219, 233, 0.15)
+    }
+.rainbow-border {
+    border: 2px solid transparent;
+    background-image: linear-gradient(#111318, #111318), linear-gradient(to right, #00dbe9, #e9b3ff, #ffb2b7);
+    background-origin: border-box;
+    background-clip: padding-box, border-box
+    }
+.marquee-container {
+    display: flex;
+    overflow: hidden;
+    user-select: none;
+    gap: 24px
+    }
+.marquee-content {
+    flex-shrink: 0;
+    display: flex;
+    justify-content: space-around;
+    gap: 24px;
+    min-width: 100%;
+    animation: scroll 40s linear infinite
+    }
+@keyframes scroll {
+    from {
+        transform: translateX(0);
+        } to {
+        transform: translateX(-100%);
+        }
+    }
+.skill-gradient-text {
+    background: linear-gradient(90deg, #00dbe9, #e9b3ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent
+    }
+.noise-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    opacity: 0.03;
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuBFW8pzjirtcijrXmTr5FBOPwaMcOZG5gkrBCPKD5xXZBIGc9rnuZl_LHocqh4FJtEC1qdbDTz2h_JRq2kMoyB068-p05U5ljGJQQLexUtV6J7sUp18byt618R_bNBSRbs7K7rkYo15ADGcz-DtCuD30hvgF2yuBFzXczqUAJJd_GxjBEUNql8h55v-uD-yYtvap8lb-hpZGb-SkLg8Rtw5vVGGOSMbfuj77531cEcAP2dyiei-whz_sOYHl67I8_stUh9Vbb_nbk4);
+    z-index: 9999
+    }</style>
+</head>
+<body class="font-body-md text-body-md">
+<div class="noise-overlay"></div>
+<!-- Navigation Shell -->
+<header class="w-full top-0 sticky z-50 bg-surface/80 backdrop-blur-md border-b border-outline-variant">
+<nav class="max-w-container-max mx-auto px-margin-desktop flex justify-between items-center h-20">
+<div class="flex items-center gap-8">
+<span class="font-headline-md text-headline-md font-bold text-primary tracking-tight">SkillSwap</span>
+<div class="hidden md:flex gap-6">
+<a class="text-primary font-bold border-b-2 border-primary pb-1 font-body-md text-body-md" href="#">Browse Skills</a>
+<a class="text-on-surface-variant font-body-md text-body-md hover:text-primary transition-colors duration-200" href="#">My Matches</a>
+<a class="text-on-surface-variant font-body-md text-body-md hover:text-primary transition-colors duration-200" href="#">Schedule</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors">search</button>
+<div class="flex items-center gap-2 group cursor-pointer">
+<span class="font-body-md text-body-md text-on-surface-variant group-hover:text-primary transition-colors">Profile</span>
+<div class="w-10 h-10 rounded-full border border-primary/20 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional close-up of a diverse young professional with a modern creative aesthetic, set against a dark studio background with subtle cyan lighting rimming their silhouette. The mood is confident and intellectual, reflecting a high-end educational technology platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCqGxwii5U3QGZLEH0S-8d6ICSSEHGdo4UAO0_1ymklqU0wl4nUkx3aerK36QmOZx8O4s4LA0GO7j__Egm_hlgu15YoYSOTYWOdh8wIRSOLGKtlnMBdTqn78jPQBF2JMYejIqJmcJM2grSGWpFFk6T_K0QvlZ5uCW9bxN7jyVJaPMX7Xz7TRsUM46C4XUGJjK-wjvJADLw3s0inXFSXmQptilpJqtCi61-UMR0-UWCXLCzU2s_GHpMft2l-IaUpdPB7Zroa3Hr-JlA"/>
+</div>
+</div>
+</div>
+</nav>
+</header>
+<main>
+<!-- Hero Section -->
+<section class="relative min-h-[90vh] flex items-center overflow-hidden">
+<div class="absolute inset-0 z-0 opacity-20 pointer-events-none">
+<div class="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px]"></div>
+<div class="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-secondary/10 rounded-full blur-[120px]"></div>
+</div>
+<div class="max-w-container-max mx-auto px-margin-desktop grid grid-cols-1 md:grid-cols-2 gap-gutter relative z-10">
+<div class="flex flex-col justify-center space-y-8">
+<div class="inline-flex items-center px-3 py-1 rounded-full bg-surface-container border border-outline-variant w-fit">
+<span class="font-label-sm text-label-sm text-primary tracking-widest uppercase">The Spark Experience</span>
+</div>
+<h1 class="font-display-lg text-display-lg text-primary leading-none">
+                        Master any skill.<br/>
+<span class="skill-gradient-text">Pay with knowledge.</span>
+</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-xl">
+                        The peer-to-peer exchange where you trade what you know for what you want to learn. No fees, just growth. Join a global lab of innovators.
+                    </p>
+<div class="flex flex-wrap gap-4 pt-4">
+<button class="px-8 py-4 bg-primary text-on-primary font-bold rounded-lg shadow-[0_0_20px_rgba(0,219,233,0.3)] hover:scale-105 active:scale-95 transition-all">
+                            Get Started
+                        </button>
+<button class="px-8 py-4 rainbow-border text-primary font-bold rounded-lg hover:scale-105 active:scale-95 transition-all">
+                            View Leaderboard
+                        </button>
+</div>
+</div>
+<div class="relative flex justify-center items-center">
+<div class="relative w-full max-w-lg aspect-square">
+<img alt="SkillSwap Mascot" class="w-full h-full object-contain drop-shadow-[0_0_50px_rgba(0,219,233,0.2)]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAmUsx9o_KQYRfP47-YMK5CAFNwgukoEFVgWGp_pMRV_8D-AhnE2lE4ZK4jtgT-BCnTqREw5yPY9X7dpaj4jMS9r-oEAursXfA2QEujJVKUI66H6-K9pYzZHzq_UmBir8LY9J7eM72tGFdMshYHJVI6smKh9bN0JMPb9iGOl6biPEL7lj99RY96L6WgT27NXnlYRueqdHh5pDZ-QI7WzFXQusciBCpOXJ5uu9Xe8upNuGk5XV8o18ZaOfvYd5T2BCUMpkVqOYgU05Y"/>
+<!-- Floating Micro-UI elements -->
+<div class="absolute top-10 right-0 p-4 bg-surface-container/60 backdrop-blur-md border border-outline-variant rounded-xl animate-bounce" style="animation-duration: 4s;">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">code</span>
+<div class="mt-2 text-xs font-label-sm">React Native</div>
+</div>
+<div class="absolute bottom-20 left-0 p-4 bg-surface-container/60 backdrop-blur-md border border-outline-variant rounded-xl animate-bounce" style="animation-delay: 1s; animation-duration: 5s;">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">brush</span>
+<div class="mt-2 text-xs font-label-sm">UI Design</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Marquee Skills -->
+<section class="py-12 bg-surface-container-low border-y border-outline-variant overflow-hidden">
+<div class="marquee-container">
+<div class="marquee-content">
+<!-- Iterating items for seamless scroll -->
+<div class="flex items-center gap-2 px-6 py-2 rounded-full border border-outline-variant bg-surface">
+<span class="font-label-sm text-label-sm text-primary">JAVASCRIPT</span>
+</div>
+<div class="flex items-center gap-2 px-6 py-2 rounded-full border border-outline-variant bg-surface">
+<span class="font-label-sm text-label-sm text-secondary">MOTION GRAPHICS</span>
+</div>
+<div class="flex items-center gap-2 px-6 py-2 rounded-full border border-outline-variant bg-surface">
+<span class="font-label-sm text-label-sm text-tertiary-fixed-dim">DATA SCIENCE</span>
+</div>
+<div class="flex items-center gap-2 px-6 py-2 rounded-full border border-outline-variant bg-surface">
+<span class="font-label-sm text-label-sm text-primary">URBAN GARDENING</span>
+</div>
+<div class="flex items-center gap-2 px-6 py-2 rounded-full border border-outline-variant bg-surface">
+<span class="font-label-sm text-label-sm text-secondary">CHEF ESSENTIALS</span>
+</div>
+<div class="flex items-center gap-2 px-6 py-2 rounded-full border border-outline-variant bg-surface">
+<span class="font-label-sm text-label-sm text-tertiary-fixed-dim">CRYPTO TRADING</span>
+</div>
+</div>
+<!-- Duplicate for seamless loop -->
+<div aria-hidden="true" class="marquee-content">
+<div class="flex items-center gap-2 px-6 py-2 rounded-full border border-outline-variant bg-surface">
+<span class="font-label-sm text-label-sm text-primary">JAVASCRIPT</span>
+</div>
+<div class="flex items-center gap-2 px-6 py-2 rounded-full border border-outline-variant bg-surface">
+<span class="font-label-sm text-label-sm text-secondary">MOTION GRAPHICS</span>
+</div>
+<div class="flex items-center gap-2 px-6 py-2 rounded-full border border-outline-variant bg-surface">
+<span class="font-label-sm text-label-sm text-tertiary-fixed-dim">DATA SCIENCE</span>
+</div>
+<div class="flex items-center gap-2 px-6 py-2 rounded-full border border-outline-variant bg-surface">
+<span class="font-label-sm text-label-sm text-primary">URBAN GARDENING</span>
+</div>
+<div class="flex items-center gap-2 px-6 py-2 rounded-full border border-outline-variant bg-surface">
+<span class="font-label-sm text-label-sm text-secondary">CHEF ESSENTIALS</span>
+</div>
+<div class="flex items-center gap-2 px-6 py-2 rounded-full border border-outline-variant bg-surface">
+<span class="font-label-sm text-label-sm text-tertiary-fixed-dim">CRYPTO TRADING</span>
+</div>
+</div>
+</div>
+</section>
+<!-- How It Works (Bento Layout) -->
+<section class="py-section-gap max-w-container-max mx-auto px-margin-desktop">
+<div class="mb-16 text-center">
+<h2 class="font-headline-xl text-headline-xl text-primary mb-4">How it Works</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto">Learn from the community, teach your passions. Our ecosystem ensures fair value for everyone's time.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter">
+<!-- Step 1: Match -->
+<div class="md:col-span-4 p-8 rounded-2xl bg-surface-container border border-outline-variant flex flex-col justify-between group hover:border-primary/50 transition-colors">
+<div>
+<div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-primary text-3xl">handshake</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-4">1. Match</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Our AI matching engine pairs you with mentors who want to learn exactly what you excel at.</p>
+</div>
+<div class="mt-12 h-32 relative overflow-hidden rounded-lg bg-surface-container-low border border-outline-variant">
+<div class="absolute inset-0 flex items-center justify-center gap-4">
+<div class="w-12 h-12 rounded-full bg-primary/20 animate-pulse"></div>
+<div class="w-8 h-[2px] bg-outline-variant"></div>
+<div class="w-12 h-12 rounded-full bg-secondary/20 animate-pulse" style="animation-delay: 0.5s"></div>
+</div>
+</div>
+</div>
+<!-- Step 2: Swap -->
+<div class="md:col-span-8 p-8 rounded-2xl bg-surface-container border border-outline-variant flex flex-col md:flex-row gap-8 group hover:border-secondary/50 transition-colors">
+<div class="flex-1 flex flex-col justify-between">
+<div>
+<div class="w-12 h-12 rounded-lg bg-secondary/10 flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-secondary text-3xl">sync_alt</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-4">2. Swap</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Schedule a session through our integrated calendar. One hour of your time equals one "Spark Credit."</p>
+</div>
+<button class="mt-8 px-6 py-2 w-fit rounded-full bg-secondary text-on-secondary font-bold text-sm">Explore Schedule</button>
+</div>
+<div class="flex-1 min-h-[200px] relative overflow-hidden rounded-lg bg-surface-container-low border border-outline-variant p-4">
+<div class="space-y-3">
+<div class="p-3 bg-surface rounded-lg border border-outline-variant/30 flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-primary/20"></div>
+<div class="h-2 w-24 bg-outline-variant rounded"></div>
+</div>
+<div class="p-3 bg-surface rounded-lg border border-primary/40 flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-secondary/20"></div>
+<div class="h-2 w-32 bg-outline-variant rounded"></div>
+</div>
+<div class="p-3 bg-surface rounded-lg border border-outline-variant/30 flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-tertiary-fixed-dim/20"></div>
+<div class="h-2 w-20 bg-outline-variant rounded"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Step 3: Learn -->
+<div class="md:col-span-12 p-10 rounded-2xl bg-surface-container border border-outline-variant flex flex-col md:flex-row items-center gap-12 group hover:border-primary/50 transition-all">
+<div class="flex-1 order-2 md:order-1">
+<div class="w-12 h-12 rounded-lg bg-primary-container/10 flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-primary-container text-3xl">school</span>
+</div>
+<h3 class="font-headline-xl text-headline-xl text-on-surface mb-6">3. Learn &amp; Grow</h3>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-8">
+                            Knowledge is the only currency that grows when you spend it. Track your progress on the Skill Spectrum and climb the global leaderboard.
+                        </p>
+<div class="flex gap-4">
+<div class="flex flex-col">
+<span class="text-3xl font-bold text-primary">95%</span>
+<span class="text-xs font-label-sm text-outline uppercase tracking-wider">Completion</span>
+</div>
+<div class="w-[1px] bg-outline-variant"></div>
+<div class="flex flex-col">
+<span class="text-3xl font-bold text-secondary">12k+</span>
+<span class="text-xs font-label-sm text-outline uppercase tracking-wider">Experts</span>
+</div>
+</div>
+</div>
+<div class="flex-1 order-1 md:order-2 w-full max-w-md">
+<div class="relative p-6 bg-surface border border-outline-variant rounded-2xl">
+<div class="flex justify-between items-center mb-4">
+<span class="font-label-sm text-primary">Skill: Cyber Security</span>
+<span class="font-label-sm text-on-surface-variant">Expert Level</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden mb-6">
+<div class="h-full bg-gradient-to-r from-primary via-secondary to-tertiary-fixed-dim w-[85%]"></div>
+</div>
+<div class="flex -space-x-3">
+<div class="w-10 h-10 rounded-full border-2 border-surface bg-primary/20"></div>
+<div class="w-10 h-10 rounded-full border-2 border-surface bg-secondary/20"></div>
+<div class="w-10 h-10 rounded-full border-2 border-surface bg-tertiary/20"></div>
+<div class="w-10 h-10 rounded-full border-2 border-surface bg-surface-container flex items-center justify-center text-xs">+42</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- CTA Section with animated background -->
+<section class="relative py-section-gap overflow-hidden">
+<div class="absolute inset-0 z-0">
+
+</div>
+<div class="max-w-container-max mx-auto px-margin-desktop relative z-10 text-center">
+<div class="bg-surface-container/60 backdrop-blur-xl border border-outline-variant p-16 rounded-[40px] max-w-4xl mx-auto shadow-2xl">
+<h2 class="font-display-lg text-headline-xl md:text-display-lg text-primary mb-8 leading-tight">Ready to join the Lab?</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-12 max-w-xl mx-auto">
+                        Join 50,000+ creators, developers, and thinkers trading knowledge across the globe. Your first swap is on us.
+                    </p>
+<div class="flex flex-col sm:flex-row justify-center gap-6">
+<button class="px-12 py-5 bg-primary text-on-primary font-bold rounded-xl hover:scale-105 transition-transform ambient-glow-cyan">Create Free Account</button>
+<button class="px-12 py-5 border border-outline-variant text-on-surface font-bold rounded-xl hover:bg-surface-container-highest transition-colors">Join Discord</button>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full mt-section-gap bg-surface-container-lowest border-t border-outline-variant">
+<div class="max-w-container-max mx-auto px-margin-desktop py-16 grid grid-cols-1 md:grid-cols-12 gap-gutter">
+<div class="md:col-span-4 flex flex-col gap-6">
+<span class="font-headline-md text-headline-md text-primary font-bold">SkillSwap</span>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-xs">
+                    © 2024 SkillSwap Lab. Empowering the Spark of Learning through community-driven peer education.
+                </p>
+<div class="flex gap-4">
+<a class="material-symbols-outlined text-secondary hover:text-primary transition-colors" href="#">public</a>
+<a class="material-symbols-outlined text-secondary hover:text-primary transition-colors" href="#">share</a>
+<a class="material-symbols-outlined text-secondary hover:text-primary transition-colors" href="#">hub</a>
+</div>
+</div>
+<div class="md:col-span-2">
+<h4 class="font-label-sm text-label-sm text-primary mb-6 tracking-widest uppercase">Platform</h4>
+<ul class="space-y-4 font-body-md text-body-md text-on-surface-variant">
+<li><a class="hover:text-secondary-fixed-dim transition-colors" href="#">Browse Skills</a></li>
+<li><a class="hover:text-secondary-fixed-dim transition-colors" href="#">Leaderboard</a></li>
+<li><a class="hover:text-secondary-fixed-dim transition-colors" href="#">Safety Center</a></li>
+</ul>
+</div>
+<div class="md:col-span-2">
+<h4 class="font-label-sm text-label-sm text-primary mb-6 tracking-widest uppercase">Community</h4>
+<ul class="space-y-4 font-body-md text-body-md text-on-surface-variant">
+<li><a class="hover:text-secondary-fixed-dim transition-colors" href="#">Discord</a></li>
+<li><a class="hover:text-secondary-fixed-dim transition-colors" href="#">Guidelines</a></li>
+<li><a class="hover:text-secondary-fixed-dim transition-colors" href="#">Help Desk</a></li>
+</ul>
+</div>
+<div class="md:col-span-4">
+<h4 class="font-label-sm text-label-sm text-primary mb-6 tracking-widest uppercase">Newsletter</h4>
+<p class="font-body-md text-body-md text-on-surface-variant mb-4">Get curated skill matches every Monday.</p>
+<div class="flex gap-2">
+<input class="bg-surface border border-outline-variant rounded-lg px-4 py-2 flex-1 focus:ring-1 focus:ring-primary focus:border-primary outline-none" placeholder="Your email" type="email"/>
+<button class="bg-primary text-on-primary px-4 py-2 rounded-lg font-bold">Join</button>
+</div>
+</div>
+</div>
+<div class="max-w-container-max mx-auto px-margin-desktop py-8 border-t border-outline-variant text-center">
+<p class="font-label-sm text-label-sm text-outline">Designed with the Spark of Innovation. SkillSwap © 2024</p>
+</div>
+</footer>
+<script>
+        // Micro-interactions and subtle scroll effects
+        document.addEventListener('DOMContentLoaded', () => {
+            const observerOptions = {
+                threshold: 0.1
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('opacity-100', 'translate-y-0');
+                        entry.target.classList.remove('opacity-0', 'translate-y-10');
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.md\\:col-span-4, .md\\:col-span-8, .md\\:col-span-12').forEach(el => {
+                el.classList.add('transition-all', 'duration-700', 'opacity-0', 'translate-y-10');
+                observer.observe(el);
+            });
+        });
+    </script>
+</body></html>

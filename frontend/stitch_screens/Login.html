@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Login | SkillSwap</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500&family=JetBrains+Mono:wght@500&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@100..900&family=JetBrains+Mono:wght@100..900&family=Sora:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-container": "#be003b",
+                    "tertiary-fixed-dim": "#ffb2b7",
+                    "on-tertiary-fixed": "#40000e",
+                    "on-secondary-container": "#e5a9ff",
+                    "surface-container-low": "#1a1c20",
+                    "on-surface": "#e2e2e8",
+                    "surface-tint": "#00dbe9",
+                    "secondary-container": "#7d01b1",
+                    "on-primary-container": "#006970",
+                    "surface-container-highest": "#333539",
+                    "inverse-surface": "#e2e2e8",
+                    "error-container": "#93000a",
+                    "primary-fixed": "#7df4ff",
+                    "on-error-container": "#ffdad6",
+                    "on-secondary-fixed-variant": "#7200a3",
+                    "tertiary": "#fff3f3",
+                    "primary-container": "#00f0ff",
+                    "on-tertiary": "#67001c",
+                    "inverse-primary": "#006970",
+                    "error": "#ffb4ab",
+                    "secondary": "#e9b3ff",
+                    "on-secondary-fixed": "#310048",
+                    "on-primary": "#00363a",
+                    "tertiary-container": "#ffcdcf",
+                    "on-primary-fixed-variant": "#004f54",
+                    "outline-variant": "#3b494b",
+                    "tertiary-fixed": "#ffdadb",
+                    "on-surface-variant": "#b9cacb",
+                    "surface-container-high": "#282a2e",
+                    "on-tertiary-fixed-variant": "#91002b",
+                    "on-background": "#e2e2e8",
+                    "background": "#111318",
+                    "surface-container-lowest": "#0c0e12",
+                    "surface-variant": "#333539",
+                    "on-primary-fixed": "#002022",
+                    "surface-dim": "#111318",
+                    "secondary-fixed-dim": "#e9b3ff",
+                    "primary-fixed-dim": "#00dbe9",
+                    "on-error": "#690005",
+                    "surface-bright": "#37393e",
+                    "surface": "#111318",
+                    "on-secondary": "#510074",
+                    "surface-container": "#1e2024",
+                    "secondary-fixed": "#f6d9ff",
+                    "primary": "#dbfcff",
+                    "outline": "#849495",
+                    "inverse-on-surface": "#2f3035"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "base": "8px",
+                    "section-gap": "120px",
+                    "margin-mobile": "16px",
+                    "gutter": "24px",
+                    "margin-desktop": "64px",
+                    "container-max": "1280px"
+            },
+            "fontFamily": {
+                    "headline-xl-mobile": ["Sora"],
+                    "label-sm": ["JetBrains Mono"],
+                    "display-lg": ["Sora"],
+                    "body-md": ["Hanken Grotesk"],
+                    "headline-xl": ["Sora"],
+                    "headline-md": ["Sora"],
+                    "body-lg": ["Hanken Grotesk"]
+            },
+            "fontSize": {
+                    "headline-xl-mobile": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                    "display-lg": ["64px", {"lineHeight": "72px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-xl": ["40px", {"lineHeight": "48px", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "500"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glow-button {
+            box-shadow: 0 0 15px rgba(0, 219, 233, 0.3);
+            transition: all 0.3s ease;
+        }
+        .glow-button:hover {
+            box-shadow: 0 0 25px rgba(0, 219, 233, 0.6);
+            transform: translateY(-1px);
+        }
+        .glass-card {
+            background: rgba(22, 27, 34, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        body {
+            background-color: #0D1117;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(0, 219, 233, 0.05) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(125, 1, 177, 0.05) 0px, transparent 50%);
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-surface min-h-screen flex flex-col">
+<!-- Top Navigation Bar (Shared Component Logic Applied) -->
+<header class="fixed top-0 w-full z-50 bg-background/80 border-b border-white/10 backdrop-blur-md">
+<div class="flex justify-between items-center px-margin-mobile md:px-margin-desktop h-16 w-full max-w-container-max mx-auto">
+<div class="font-headline-md text-headline-md font-bold text-primary">
+                SkillSwap
+            </div>
+<div class="flex items-center gap-base">
+<button class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors px-4 py-2">
+                    Login
+                </button>
+<button class="bg-primary-container text-on-primary font-label-sm text-label-sm px-6 py-2 rounded-lg hover:scale-95 active:scale-90 transition-transform">
+                    Sign Up
+                </button>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow flex items-center justify-center px-margin-mobile pt-20 pb-12">
+<!-- Login Container -->
+<div class="w-full max-w-[440px] animate-in fade-in slide-in-from-bottom-4 duration-700">
+<!-- Welcome Header -->
+<div class="text-center mb-8">
+<h1 class="font-headline-xl text-headline-xl-mobile md:text-headline-xl mb-2 tracking-tight">
+                    Welcome Back
+                </h1>
+<p class="text-on-surface-variant font-body-md">
+                    The Lab is ready for your next session.
+                </p>
+</div>
+<!-- Login Card -->
+<div class="glass-card rounded-xl p-8 md:p-10">
+<form class="space-y-6" onsubmit="event.preventDefault();">
+<!-- Email Field -->
+<div class="space-y-2">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest" for="email">
+                            Email Address
+                        </label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline-variant text-[20px]">
+                                mail
+                            </span>
+<input class="w-full bg-surface-container-low border border-outline-variant focus:border-primary-fixed-dim focus:ring-1 focus:ring-primary-fixed-dim rounded-lg py-3 pl-10 pr-4 text-on-surface placeholder-outline-variant transition-all outline-none" id="email" name="email" placeholder="name@example.com" required="" type="email"/>
+</div>
+</div>
+<!-- Password Field -->
+<div class="space-y-2">
+<div class="flex justify-between items-center">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest" for="password">
+                                Password
+                            </label>
+<a class="font-label-sm text-label-sm text-primary-fixed-dim hover:text-primary transition-colors" href="#">
+                                Forgot Password?
+                            </a>
+</div>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline-variant text-[20px]">
+                                lock
+                            </span>
+<input class="w-full bg-surface-container-low border border-outline-variant focus:border-primary-fixed-dim focus:ring-1 focus:ring-primary-fixed-dim rounded-lg py-3 pl-10 pr-4 text-on-surface placeholder-outline-variant transition-all outline-none" id="password" name="password" placeholder="••••••••" required="" type="password"/>
+</div>
+</div>
+<!-- Primary Action -->
+<button class="glow-button w-full bg-primary-fixed-dim text-on-primary-fixed font-headline-md text-body-lg py-4 rounded-lg font-bold flex items-center justify-center gap-2 group" type="submit">
+                        Enter the Lab
+                        <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">
+                            arrow_forward
+                        </span>
+</button>
+</form>
+<!-- Divider -->
+<div class="relative my-8">
+<div class="absolute inset-0 flex items-center">
+<div class="w-full border-t border-outline-variant opacity-30"></div>
+</div>
+<div class="relative flex justify-center text-label-sm">
+<span class="bg-[#161B22] px-4 text-on-surface-variant">OR CONTINUE WITH</span>
+</div>
+</div>
+<!-- Social Logins -->
+<div class="grid grid-cols-2 gap-4">
+<button class="flex items-center justify-center gap-2 bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant rounded-lg py-3 transition-colors">
+<img class="w-5 h-5" data-alt="A clean, minimalist vector icon of the Google logo rendered with professional, high-contrast colors suitable for a dark-themed EdTech dashboard. The aesthetic is modern and systematic, fitting within a cyber-minimalist user interface with deep cosmic navy backgrounds and vibrant neon accents. The mood is secure and trustworthy." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1sHaGbKzjUu1NOvH8kk-U5je-0aWip-uLfnw-Z0NiMvJXkbsFR3GQwRR25V4ITJVmzfD_8R8s_qJkxpTxabTI_DiwvqVb6s0zOFaqRULtVAp0jWzpyK2gICPMo7DqhP4YD1-HlsaRPAtGfCeoS32KSzM9LuGqeLQT2DQ8TXGfL7UXqEX9WYKC9_2bNnAxxjTo3kDPnOAh4-g_G4mRIoHeLEHQLPDH0y_dA3rqs1knrsS9qJBV8E7panqX721H4lkYGnkoMl95UuY"/>
+<span class="font-label-sm text-label-sm">Google</span>
+</button>
+<button class="flex items-center justify-center gap-2 bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant rounded-lg py-3 transition-colors">
+<img class="w-5 h-5" data-alt="A professional, minimalist vector icon of the GitHub logo, styled in bright white for high visibility on a dark cosmic navy background. The design reflects a modern-systematic tech-forward vibe for a learning platform, emphasizing focus and collaboration. High-quality render with sharp edges and clean geometry." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCqhICjbiyhEL1GyFajl3qIaWU99Aek7Ge4iziRmS4Sg7FYMA1mumWn7ho2H8oH1TwGtc35D0IIZXdXwE5LSt47CCXu3nZTPStAwYJFokExZRC2gC5CksWdBFXpf-IMWkZJVK8KbEfnqJks5tIToOi9Q1pLT_i78Xf07cEM1x-sbPqrngbiknkSaGubpG0WJ0Hblumwg6sMaYKvXi2_ysMCzlOJExn6Jx4B76ol6E-BC-11p6BlqHjEFPQj-s7n18w-k8iBL1jv5hc"/>
+<span class="font-label-sm text-label-sm">GitHub</span>
+</button>
+</div>
+</div>
+<!-- Footer Sign Up Link -->
+<div class="text-center mt-8">
+<p class="text-on-surface-variant font-body-md">
+                    Don't have an account yet? 
+                    <a class="text-primary-fixed-dim font-bold hover:underline transition-all" href="#">Sign up for free.</a>
+</p>
+</div>
+</div>
+</main>
+<!-- Footer (Shared Component) -->
+<footer class="w-full py-12 bg-surface-container-lowest border-t border-white/5">
+<div class="flex flex-col md:flex-row justify-between items-center px-margin-mobile md:px-margin-desktop gap-base w-full max-w-container-max mx-auto">
+<div class="font-headline-md text-headline-md text-primary font-bold">
+                SkillSwap
+            </div>
+<div class="flex gap-6">
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Terms</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Privacy</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Community Guidelines</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Support</a>
+</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant opacity-80 mt-4 md:mt-0">
+                © 2024 SkillSwap. Part of The Spark ecosystem.
+            </div>
+</div>
+</footer>
+<!-- Interactive Background Particles -->
+<script>
+        // Simple ambient particle micro-interaction
+        document.addEventListener('mousemove', (e) => {
+            const { clientX, clientY } = e;
+            const x = (clientX / window.innerWidth - 0.5) * 20;
+            const y = (clientY / window.innerHeight - 0.5) * 20;
+            document.body.style.backgroundPosition = `${x}px ${y}px`;
+        });
+    </script>
+</body></html>

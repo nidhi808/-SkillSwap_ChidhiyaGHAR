@@ -124,14 +124,40 @@ async function findTopMatches(userId, { limit = 20 } = {}) {
     const { data: candidates } = await supabaseAdmin
       .from('profiles')
       .select(`
-        id, full_name, avatar_url, avg_rating, total_sessions, reputation_points, location, city, state_code,
-        user_skills_offered(skills(name)),
-        user_skills_wanted(skills(name))
+        id, full_name, avatar_url, avg_rating, total_sessions, reputation_points, location, city, state_code
       `)
       .neq('id', userId)
       .limit(200)
 
     if (!candidates || candidates.length === 0) return []
+
+    const candidateIds = candidates.map(c => c.id)
+    const db = require('./db.js')
+
+    // Fetch offered and wanted skills for candidates
+    const offeredSkills = await db.select('user_skills_offered', 'user_id, skill_id', { user_id: candidateIds })
+    const wantedSkills = await db.select('user_skills_wanted', 'user_id, skill_id', { user_id: candidateIds })
+
+    // Fetch skill definitions
+    let skillsMap = {}
+    const allSkillIds = [...new Set([...offeredSkills.map(s => s.skill_id), ...wantedSkills.map(s => s.skill_id)])]
+    if (allSkillIds.length > 0) {
+      const skills = await db.select('skills', 'id, name', { id: allSkillIds })
+      skillsMap = skills.reduce((acc, s) => ({ ...acc, [s.id]: s.name }), {})
+    }
+
+    // Map candidate skills
+    const candidateOfferedMap = offeredSkills.reduce((acc, os) => {
+      if (!acc[os.user_id]) acc[os.user_id] = []
+      acc[os.user_id].push(skillsMap[os.skill_id])
+      return acc
+    }, {})
+
+    const candidateWantedMap = wantedSkills.reduce((acc, ws) => {
+      if (!acc[ws.user_id]) acc[ws.user_id] = []
+      acc[ws.user_id].push(skillsMap[ws.skill_id])
+      return acc
+    }, {})
 
     // Compute match scores for top candidates
     const matchPromises = candidates.slice(0, 50).map(async (candidate) => {
@@ -140,11 +166,12 @@ async function findTopMatches(userId, { limit = 20 } = {}) {
         return {
           userId: candidate.id,
           profile: candidate,
-          skillsOffered: candidate.user_skills_offered?.map(s => s.skills?.name).filter(Boolean) || [],
-          skillsWanted: candidate.user_skills_wanted?.map(s => s.skills?.name).filter(Boolean) || [],
+          skillsOffered: candidateOfferedMap[candidate.id] || [],
+          skillsWanted: candidateWantedMap[candidate.id] || [],
           ...scores
         }
-      } catch {
+      } catch (err) {
+        logger.warn(`[MatchingEngine] Failed matching score compute: ${err.message}`)
         return null
       }
     })

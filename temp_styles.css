@@ -1,0 +1,102 @@
+/* =====================================================
+   Animations & Utilities for Landing Page
+   ===================================================== */
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes shimmer-scan {
+  0% { transform: translateX(-150%) skewX(-20deg); opacity: 0; }
+  20% { opacity: 0.6; }
+  50% { transform: translateX(150%) skewX(-20deg); opacity: 0; }
+  100% { transform: translateX(150%) skewX(-20deg); opacity: 0; }
+}
+
+@keyframes rainbow-pulse {
+  0%, 100% { box-shadow: 0 0 40px rgba(0, 219, 233, 0.2), 0 0 80px rgba(233, 179, 255, 0.1); }
+  50% { box-shadow: 0 0 60px rgba(0, 219, 233, 0.4), 0 0 120px rgba(255, 178, 183, 0.2); }
+}
+
+@keyframes scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-100%); }
+}
+
+.noise-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.03;
+  background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuBFW8pzjirtcijrXmTr5FBOPwaMcOZG5gkrBCPKD5xXZBIGc9rnuZl_LHocqh4FJtEC1qdbDTz2h_JRq2kMoyB068-p05U5ljGJQQLexUtV6J7sUp18byt618R_bNBSRbs7K7rkYo15ADGcz-DtCuD30hvgF2yuBFzXczqUAJJd_GxjBEUNql8h55v-uD-yYtvap8lb-hpZGb-SkLg8Rtw5vVGGOSMbfuj77531cEcAP2dyiei-whz_sOYHl67I8_stUh9Vbb_nbk4);
+  z-index: 9999;
+}
+
+.skill-gradient-text {
+  background: linear-gradient(90deg, #00dbe9, #e9b3ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.rainbow-border {
+  border: 2px solid transparent;
+  background-image: linear-gradient(var(--color-background), var(--color-background)), linear-gradient(to right, #00dbe9, #e9b3ff, #ffb2b7);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+}
+
+.marquee-container {
+  display: flex;
+  overflow: hidden;
+  user-select: none;
+  gap: 24px;
+}
+
+.marquee-content {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-around;
+  gap: 24px;
+  min-width: 100%;
+  animation: scroll 40s linear infinite;
+}
+
+.robot-container {
+  animation: float 6s ease-in-out infinite;
+}
+
+.robot-hover-tilt {
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.robot-container:hover .robot-hover-tilt {
+  transform: rotate(3deg) scale(1.02) translateY(-5px);
+}
+
+.shimmer-layer {
+  position: absolute;
+  top: 21%;
+  left: 15%;
+  width: 70%;
+  height: 8%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  pointer-events: none;
+  z-index: 20;
+  animation: shimmer-scan 4s infinite ease-in-out;
+}
+
+.robot-aura {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  height: 80%;
+  border-radius: 50%;
+  z-index: -1;
+  animation: rainbow-pulse 8s infinite alternate;
+}

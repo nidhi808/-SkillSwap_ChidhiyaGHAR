@@ -1,14 +1,19 @@
 import { useState, useEffect, useRef } from 'react';
-import { RobotCanvas } from './components/RobotCanvas';
+
 import { LandingPage } from './components/LandingPage';
 import { AuthPage } from './components/AuthPage';
 import { ProfileBuilder } from './components/ProfileBuilder';
 import { Dashboard } from './components/Dashboard';
 import { WhiteboardRoom } from './components/WhiteboardRoom';
-import { Volume2, VolumeX, Activity, ShieldCheck } from 'lucide-react';
+import { SkillBrowser } from './components/SkillBrowser';
+import { ChatPanel } from './components/ChatPanel';
+import { SessionScheduler } from './components/SessionScheduler';
+import { Leaderboard } from './components/Leaderboard';
+import { ReviewModal } from './components/ReviewModal';
+import { LiveLecture } from './components/LiveLecture';
 import { api } from './services/api';
 
-type AppView = 'landing' | 'auth' | 'profile' | 'dashboard' | 'whiteboard';
+type AppView = 'landing' | 'auth' | 'profile' | 'dashboard' | 'whiteboard' | 'skills' | 'chat' | 'sessions' | 'leaderboard' | 'live-lecture';
 
 interface UserProfile {
   name: string;
@@ -24,11 +29,10 @@ function App() {
   const [view, setView] = useState<AppView>('landing');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
-  const [audioActive, setAudioActive] = useState(false);
   const cursorRef = useRef<HTMLDivElement | null>(null);
 
   // Visor states for Three.js robot
-  const [visorState, setVisorState] = useState<'eyes' | 'quote' | 'swap' | 'success' | 'camera'>('eyes');
+  const [, setVisorState] = useState<'eyes' | 'quote' | 'swap' | 'success' | 'camera'>('eyes');
 
   // Onboarded Profile
   const [userProfile, setUserProfile] = useState<UserProfile>({
@@ -44,8 +48,12 @@ function App() {
   // Whiteboard meet details
   const [activeRoom, setActiveRoom] = useState<{ tutor: string; student: string; skill: string } | null>(null);
 
-  // Announcement banner dismissal
-  const [bannerVisible, setBannerVisible] = useState(true);
+
+
+  // Review modal state
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [reviewTarget, setReviewTarget] = useState({ sessionId: '', peerName: '', peerAvatar: '', skillName: '' });
+  void setReviewTarget; // Retain setter reference for future use
 
   // Monitor page scrolling for mascot tracking & natural vertical scrolling progress
   useEffect(() => {
@@ -91,7 +99,7 @@ function App() {
       const res = await api.profile.getMyProfile();
       console.log('[Session Check] Profile response received:', res);
       if (res.data) {
-        const prof = res.data;
+        const prof = res.data as any;
         const teaching = prof.user_skills_offered?.map((s: any) => s.skills?.name).filter(Boolean) || [];
         const learning = prof.user_skills_wanted?.map((s: any) => s.skills?.name).filter(Boolean) || [];
         
@@ -105,29 +113,30 @@ function App() {
           learningSkills: learning.length ? learning : ['C Language', 'UI/UX Design'],
         });
 
-        setIsLoggedIn(true);
 
-        const isComplete = prof.is_profile_complete || !!(prof.full_name && prof.location && prof.city);
-        console.log('[Session Check] Profile complete:', isComplete, 'Routing to:', isComplete ? 'dashboard' : 'profile');
+          setIsLoggedIn(true);
 
-        if (isComplete) {
-          setView('dashboard');
+          const isComplete = prof.is_profile_complete || !!(prof.full_name && prof.location && prof.city);
+          console.log('[Session Check] Profile complete:', isComplete, 'Routing to:', isComplete ? 'dashboard' : 'profile');
+
+          if (isComplete) {
+            setView('dashboard');
+          } else {
+            setView('profile');
+          }
         } else {
+          console.warn('[Session Check] Profile data is null, routing to profile builder...');
+          setIsLoggedIn(true);
           setView('profile');
         }
-      } else {
-        console.warn('[Session Check] Profile data is null, redirecting to landing...');
-        localStorage.removeItem('access_token');
+      } catch (err) {
+        console.error('[Session Check] Failed to retrieve user profile:', err);
+        // Do not clear token on error to prevent aggressive logout during transient backend issues
         setIsLoggedIn(false);
         setView('landing');
       }
-    } catch (err: any) {
-      console.error('[Session Check] Failed to retrieve user profile:', err);
-      localStorage.removeItem('access_token');
-      setIsLoggedIn(false);
-      setView('landing');
-    }
-  };
+    };
+
 
   // Handle Supabase Auth Redirect hashes (e.g. email confirmation redirect)
   useEffect(() => {
@@ -171,17 +180,7 @@ function App() {
     setView('dashboard');
   };
 
-  // Scroll to a landing page section smoothly
-  const scrollToSection = (sectionId: string) => {
-    if (view !== 'landing') {
-      setView('landing');
-      setTimeout(() => {
-        document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
-    } else {
-      document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
+
 
   const handleLogout = async () => {
     try {
@@ -196,188 +195,146 @@ function App() {
 
   return (
     <>
-      {/* Custom Glowing Pointer Cursor */}
-      <div ref={cursorRef} className="glow-cursor" />
-
-      {/* Screen scanlines simulation */}
-      <div className="scanlines" />
-
-      {/* HUD Frame Borders */}
-      <div className="hud-frame">
-        <div className="hud-corner top-left"></div>
-        <div className="hud-corner top-right"></div>
-        <div className="hud-corner bottom-left"></div>
-        <div className="hud-corner bottom-right"></div>
-      </div>
-
-      {/* ── Announcement Banner (ChainGPT style) ── */}
-      {bannerVisible && (
-        <div className="announce-banner">
-          <span>New :</span>
-          <span className="link" onClick={() => scrollToSection('roadmap')}>
-            Inter-College Skill Grid expanding to NSUT, DTU &amp; IIITD &nbsp;↗
-          </span>
-          <button className="banner-close" onClick={() => setBannerVisible(false)}>✕</button>
-        </div>
-      )}
-
-      {/* ── Navbar — ChainGPT style ── */}
-      <header
-        style={{
-          height: '68px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '0',
-          position: 'sticky',
-          top: 0,
-          background: 'rgba(4, 4, 6, 0.94)',
-          backdropFilter: 'blur(14px)',
-          zIndex: 99,
-          boxSizing: 'border-box',
-        }}
-      >
-        {/* Left: Brand Logo */}
-        <div
-          style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', padding: '0 32px', flexShrink: 0 }}
-          onClick={() => { setView('landing'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-        >
-          <span style={{ fontSize: '1.3rem' }}>🛸</span>
-          <span className="font-mono" style={{ fontWeight: 800, fontSize: '1rem', letterSpacing: '0.08em', color: '#fff' }}>
-            SKILLSWAP <span style={{ color: 'rgba(255,255,255,0.22)' }}>//</span>{' '}
-            <span style={{ color: 'var(--color-cyan)' }}>CG</span>
-          </span>
-        </div>
-
-        {/* Ecosystem tab (ChainGPT column-separator style) */}
-        <div
-          style={{
-            height: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            padding: '0 26px',
-            borderLeft: '1px solid rgba(255,255,255,0.05)',
-            borderRight: '1px solid rgba(255,255,255,0.05)',
-            gap: '8px',
-            cursor: 'pointer',
-            flexShrink: 0,
-          }}
-          onClick={() => scrollToSection('ecosystem')}
-        >
-          <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: '0.6rem' }}>⠿⠿</span>
-          <span className="font-mono" style={{ fontSize: '0.7rem', color: '#fff', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-            OUR ECOSYSTEM
-          </span>
-        </div>
-
-        {/* Center: Nav links with dropdown carets */}
-        <nav style={{ display: 'flex', flex: 1, justifyContent: 'center' }} className="font-mono">
-          {[
-            { label: 'Solutions', id: 'solutions' },
-            { label: 'Developers', id: 'ecosystem' },
-            { label: 'About AI Hub', id: 'team' },
-            { label: 'Learn', id: 'roadmap' },
-            { label: 'FAQ', id: 'faq' },
-          ].map((sec) => (
-            <button
-              key={sec.id}
-              onClick={() => scrollToSection(sec.id)}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: 'rgba(255,255,255,0.52)',
-                cursor: 'pointer',
-                fontSize: '0.78rem',
-                letterSpacing: '0.02em',
-                transition: 'color 0.2s',
-                padding: '0 16px',
-                height: '68px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = '#fff')}
-              onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.52)')}
+      {/* Top NavBar from Stitch design */}
+      <header className="w-full top-0 sticky z-50 bg-surface/80 border-b border-outline-variant backdrop-blur-md">
+        <nav className="max-w-container-max mx-auto px-margin-desktop flex justify-between items-center h-20">
+          {/* Left Logo */}
+          <div className="flex items-center gap-8">
+            <div 
+              className="flex items-center gap-3 cursor-pointer"
+              onClick={() => { setView('landing'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
             >
-              {sec.label}
-              <span style={{ fontSize: '0.5rem', opacity: 0.5 }}>▾</span>
-            </button>
-          ))}
-        </nav>
-
-        {/* Right: HUD status + buttons + audio */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '18px', padding: '0 24px' }}>
-          <div className="font-mono" style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.68rem', color: 'rgba(255,255,255,0.35)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Activity size={10} color="var(--color-cyan)" className="pulse-cyan" />
-              GRID: <span style={{ color: 'var(--color-green)' }}>ONLINE</span>
+              <img src="/logo.png" alt="SkillSwap Logo" className="w-10 h-10 object-contain drop-shadow-[0_0_10px_rgba(0,219,233,0.8)]" />
+              <span className="font-headline-md text-headline-md font-bold text-primary tracking-tight">SkillSwap</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <ShieldCheck size={10} color="var(--color-purple)" />
-              NODE: <span style={{ color: 'var(--color-purple)' }}>VERIFIED</span>
+
+            {/* Center Links (Visible when logged in or for navigation) */}
+            <div className="hidden md:flex gap-6 items-center">
+              <button 
+                onClick={() => setView('landing')}
+                className={`font-body-md text-body-md transition-colors duration-200 outline-none border-none bg-transparent cursor-pointer ${
+                  view === 'landing' ? 'text-primary font-bold border-b-2 border-primary pb-1' : 'text-on-surface-variant hover:text-primary'
+                }`}
+              >
+                Home
+              </button>
+              <button 
+                onClick={() => setView('skills')}
+                className={`font-body-md text-body-md transition-colors duration-200 outline-none border-none bg-transparent cursor-pointer ${
+                  view === 'skills' ? 'text-primary font-bold border-b-2 border-primary pb-1' : 'text-on-surface-variant hover:text-primary'
+                }`}
+              >
+                Browse Skills
+              </button>
+              <button 
+                onClick={() => {
+                  if (isLoggedIn) {
+                    setView('dashboard');
+                  } else {
+                    setView('auth');
+                  }
+                }}
+                className={`font-body-md text-body-md transition-colors duration-200 outline-none border-none bg-transparent cursor-pointer ${
+                  view === 'dashboard' ? 'text-primary font-bold border-b-2 border-primary pb-1' : 'text-on-surface-variant hover:text-primary'
+                }`}
+              >
+                My Matches
+              </button>
+              <button 
+                onClick={() => {
+                  if (isLoggedIn) {
+                    setView('sessions');
+                  } else {
+                    setView('auth');
+                  }
+                }}
+                className={`font-body-md text-body-md transition-colors duration-200 outline-none border-none bg-transparent cursor-pointer ${
+                  view === 'sessions' ? 'text-primary font-bold border-b-2 border-primary pb-1' : 'text-on-surface-variant hover:text-primary'
+                }`}
+              >
+                Schedule
+              </button>
+              <button 
+                onClick={() => setView('leaderboard')}
+                className={`font-body-md text-body-md transition-colors duration-200 outline-none border-none bg-transparent cursor-pointer ${
+                  view === 'leaderboard' ? 'text-primary font-bold border-b-2 border-primary pb-1' : 'text-on-surface-variant hover:text-primary'
+                }`}
+              >
+                Leaderboard
+              </button>
             </div>
           </div>
 
-          {isLoggedIn ? (
-            <div style={{ display: 'flex', gap: '10px' }}>
-              {view !== 'dashboard' && view !== 'whiteboard' && (
+          {/* Right Action Block */}
+          <div className="flex items-center gap-4">
+            <button className="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors bg-transparent border-none cursor-pointer">search</button>
+            {isLoggedIn ? (
+              <div className="flex items-center gap-4">
                 <button 
-                  className="cyber-button font-mono" 
-                  style={{ padding: '6px 12px', fontSize: '0.7rem', border: '1px solid rgba(0, 240, 255, 0.3)' }}
-                  onClick={() => setView('dashboard')}
+                  className="p-2 text-primary hover:text-primary-container transition-colors bg-transparent border-none cursor-pointer flex items-center"
+                  onClick={() => setView('live-lecture')}
+                  title="Live Lecture"
                 >
-                  DASHBOARD
+                  <span className="material-symbols-outlined text-[24px]">cast</span>
                 </button>
-              )}
-              {view !== 'profile' && (
-                <button 
-                  className="cyber-button font-mono" 
-                  style={{ padding: '6px 12px', fontSize: '0.7rem', border: '1px solid rgba(0, 240, 255, 0.3)' }}
+                {view !== 'chat' && (
+                  <button 
+                    className="p-2 text-on-surface-variant hover:text-primary transition-colors bg-transparent border-none cursor-pointer flex items-center"
+                    onClick={() => setView('chat')}
+                    title="Messages"
+                  >
+                    <span className="material-symbols-outlined text-[24px]">chat</span>
+                  </button>
+                )}
+                
+                <div 
+                  className="flex items-center gap-2 group cursor-pointer"
                   onClick={() => setView('profile')}
                 >
-                  PROFILE
+                  <span className="font-body-md text-body-md text-on-surface-variant group-hover:text-primary transition-colors max-w-[100px] truncate">
+                    {userProfile.name || 'Profile'}
+                  </span>
+                  <div className="w-10 h-10 rounded-full border border-primary/20 overflow-hidden">
+                    <img 
+                      className="w-full h-full object-cover" 
+                      src={`https://api.dicebear.com/7.x/bottts/svg?seed=${userProfile.name || 'Peer'}`} 
+                      alt="Profile Avatar"
+                    />
+                  </div>
+                </div>
+
+                <button 
+                  onClick={handleLogout}
+                  className="text-label-sm font-label-sm text-error hover:text-red-400 font-bold bg-transparent border-none cursor-pointer transition-colors ml-2"
+                  title="Logout"
+                >
+                  <span className="material-symbols-outlined text-[20px]">logout</span>
                 </button>
-              )}
-              <button 
-                className="cyber-button purple font-mono" 
-                style={{ padding: '6px 12px', fontSize: '0.7rem', border: '1px solid rgba(189, 0, 255, 0.3)' }}
-                onClick={handleLogout}
-              >
-                LOG OUT
-              </button>
-            </div>
-          ) : (
-            view !== 'auth' && (
-              <button className="launch-dapp-btn" onClick={() => setView('auth')}>
-                <span style={{ fontSize: '0.5rem', letterSpacing: '0.05em', opacity: 0.7 }}>••</span>
-                LAUNCH DAPP
-              </button>
-            )
-          )}
-
-          <button
-            onClick={() => setAudioActive(!audioActive)}
-            style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.35)', display: 'flex', alignItems: 'center', transition: 'color 0.2s' }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = '#fff')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.35)')}
-          >
-            {audioActive ? <Volume2 size={14} /> : <VolumeX size={14} />}
-          </button>
-        </div>
-
-        {/* Animated rainbow bottom border — ChainGPT signature */}
-        <div className="navbar-rainbow-border" style={{ position: 'absolute' }} />
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => setView('auth')}
+                  className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors px-4 py-2 bg-transparent border-none cursor-pointer"
+                >
+                  Login
+                </button>
+                <button 
+                  onClick={() => setView('auth')}
+                  className="bg-primary-container text-on-primary font-label-sm text-label-sm px-6 py-2 rounded-lg hover:scale-95 active:scale-90 transition-transform cursor-pointer border-none font-bold"
+                >
+                  Sign Up
+                </button>
+              </div>
+            )}
+          </div>
+        </nav>
       </header>
 
-      {/* Main View Grid */}
-      <main style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column' }}>
-        
-        {/* Render Three.js Mascot */}
-        <RobotCanvas 
-          scrollProgress={scrollProgress} 
-          activeSection={view}
-          visorState={visorState}
-        />
+      {/* Main View Area */}
+      <main className="flex-grow flex flex-col relative w-full">
+        {/* Render Three.js Mascot ONLY on the landing page */}
+
 
         {/* Dynamic page contents */}
         {view === 'landing' && (
@@ -397,7 +354,7 @@ function App() {
 
         {view === 'profile' && (
           <ProfileBuilder 
-            onComplete={handleProfileComplete}
+            onComplete={() => handleProfileComplete(userProfile)}
             setVisorState={setVisorState}
           />
         )}
@@ -406,76 +363,112 @@ function App() {
           <Dashboard 
             userProfile={userProfile}
             onEnterRoom={handleEnterRoom}
+            onScheduleSession={() => setView('sessions')}
+            onNavigate={setView as any}
             setVisorState={setVisorState}
           />
         )}
 
         {view === 'whiteboard' && activeRoom && (
           <WhiteboardRoom 
-            roomData={activeRoom}
-            onClose={() => setView('dashboard')}
+            roomId={`${activeRoom.tutor}-${activeRoom.student}`}
+            onLeave={() => setView('dashboard')}
             setVisorState={setVisorState}
           />
         )}
 
+        {view === 'skills' && (
+          <SkillBrowser 
+            setVisorState={setVisorState}
+            onRequestSwap={(peerId) => {
+              console.log('Swap requested with peer:', peerId);
+              setVisorState('swap');
+            }}
+          />
+        )}
+
+        {view === 'chat' && (
+          <ChatPanel 
+            setVisorState={setVisorState}
+          />
+        )}
+
+        {view === 'sessions' && (
+          <SessionScheduler 
+            setVisorState={setVisorState}
+          />
+        )}
+
+        {view === 'leaderboard' && (
+          <Leaderboard 
+            setVisorState={setVisorState}
+          />
+        )}
+
+        {view === 'live-lecture' && (
+          <LiveLecture 
+            onBack={() => setView('dashboard')}
+          />
+        )}
+
+        {/* Review Modal — can be triggered from anywhere */}
+        <ReviewModal
+          isOpen={reviewModalOpen}
+          onClose={() => setReviewModalOpen(false)}
+          sessionId={reviewTarget.sessionId}
+          peerName={reviewTarget.peerName}
+          peerAvatar={reviewTarget.peerAvatar}
+          skillName={reviewTarget.skillName}
+          onSubmit={async (review) => {
+            try {
+              await api.reviews.submitReview({ session_id: review.sessionId, rating: review.rating, comment: review.comment });
+            } catch { /* stub */ }
+            setReviewModalOpen(false);
+          }}
+        />
       </main>
 
-      {/* ── ChainGPT-style Multi-Column Mega Footer ── */}
-      <footer className="footer-mega">
-        <div className="footer-main-grid">
-          {/* Col 1: Platform */}
-          <div>
-            <div className="footer-col-title">Platform</div>
-            {['Skill Dashboard', 'Swap Skills', 'Live Whiteboard', 'Profile & Badges', 'Reputation Score', 'Peer Matching'].map(l => (
-              <button key={l} className="footer-link" onClick={() => setView('auth')}>{l}</button>
-            ))}
+      {/* Stitch Design-compliant Footer */}
+      <footer className="w-full mt-section-gap bg-surface-container-lowest border-t border-outline-variant">
+        <div className="max-w-container-max mx-auto px-margin-desktop py-16 grid grid-cols-1 md:grid-cols-12 gap-gutter">
+          <div className="md:col-span-4 flex flex-col gap-6 animate-on-scroll">
+            <span className="font-headline-md text-headline-md text-primary font-bold">SkillSwap</span>
+            <p className="font-body-md text-body-md text-on-surface-variant max-w-xs">
+              © {new Date().getFullYear()} SkillSwap Lab. Empowering the Spark of Learning through community-driven peer education.
+            </p>
+            <div className="flex gap-4">
+              <a className="material-symbols-outlined text-secondary hover:text-primary transition-colors no-underline cursor-pointer" href="#">public</a>
+              <a className="material-symbols-outlined text-secondary hover:text-primary transition-colors no-underline cursor-pointer" href="#">share</a>
+              <a className="material-symbols-outlined text-secondary hover:text-primary transition-colors no-underline cursor-pointer" href="#">hub</a>
+            </div>
           </div>
-
-          {/* Col 2: Quick Links */}
-          <div>
-            <div className="footer-col-title">Quick Links</div>
-            {[
-              { label: 'Documentation', id: 'intro' },
-              { label: 'Our Ecosystem', id: 'ecosystem' },
-              { label: 'Roadmap', id: 'roadmap' },
-              { label: 'FAQ', id: 'faq' },
-              { label: 'Team', id: 'team' },
-              { label: 'Join Community', id: 'faq' },
-            ].map(l => (
-              <button key={l.label} className="footer-link" onClick={() => scrollToSection(l.id)}>{l.label}</button>
-            ))}
+          <div className="md:col-span-2">
+            <h4 className="font-label-sm text-label-sm text-primary mb-6 tracking-widest uppercase font-bold">Platform</h4>
+            <ul className="space-y-4 font-body-md text-body-md text-on-surface-variant list-none p-0 m-0">
+              <li><button onClick={() => setView('skills')} className="hover:text-secondary-fixed-dim bg-transparent border-none cursor-pointer text-on-surface-variant transition-colors p-0 text-left">Browse Skills</button></li>
+              <li><button onClick={() => setView('leaderboard')} className="hover:text-secondary-fixed-dim bg-transparent border-none cursor-pointer text-on-surface-variant transition-colors p-0 text-left">Leaderboard</button></li>
+              <li><a className="hover:text-secondary-fixed-dim transition-colors no-underline text-on-surface-variant" href="#">Safety Center</a></li>
+            </ul>
           </div>
-
-          {/* Col 3: Legal */}
-          <div>
-            <div className="footer-col-title">Legal</div>
-            {['Privacy Policy', 'Terms of Service', 'Cookie Policy', 'Eligibility Policy'].map(l => (
-              <button key={l} className="footer-link">{l}</button>
-            ))}
+          <div className="md:col-span-2">
+            <h4 className="font-label-sm text-label-sm text-primary mb-6 tracking-widest uppercase font-bold">Community</h4>
+            <ul className="space-y-4 font-body-md text-body-md text-on-surface-variant list-none p-0 m-0">
+              <li><a className="hover:text-secondary-fixed-dim transition-colors no-underline text-on-surface-variant" href="#">Discord</a></li>
+              <li><a className="hover:text-secondary-fixed-dim transition-colors no-underline text-on-surface-variant" href="#">Guidelines</a></li>
+              <li><a className="hover:text-secondary-fixed-dim transition-colors no-underline text-on-surface-variant" href="#">Help Desk</a></li>
+            </ul>
           </div>
-
-          {/* Col 4: Socials with ↗ arrows (ChainGPT exact style) */}
-          <div className="footer-social-col">
-            {[
-              { name: 'GITHUB', href: 'https://github.com' },
-              { name: 'DISCORD', href: '#' },
-              { name: 'TWITTER', href: '#' },
-              { name: 'LINKEDIN', href: '#' },
-              { name: 'YOUTUBE', href: '#' },
-              { name: 'TELEGRAM', href: '#' },
-              { name: 'INSTAGRAM', href: '#' },
-            ].map(s => (
-              <a key={s.name} href={s.href} target="_blank" rel="noreferrer" className="footer-social-link">
-                {s.name} <span className="footer-social-arrow">↗</span>
-              </a>
-            ))}
+          <div className="md:col-span-4 animate-on-scroll">
+            <h4 className="font-label-sm text-label-sm text-primary mb-6 tracking-widest uppercase font-bold">Newsletter</h4>
+            <p className="font-body-md text-body-md text-on-surface-variant mb-4">Get curated skill matches every Monday.</p>
+            <div className="flex gap-2">
+              <input className="bg-surface border border-outline-variant rounded-lg px-4 py-2 flex-1 focus:ring-1 focus:ring-primary focus:border-primary outline-none text-on-surface" placeholder="Your email" type="email"/>
+              <button className="bg-primary text-on-primary px-4 py-2 rounded-lg font-bold border-none hover:opacity-90 cursor-pointer">Join</button>
+            </div>
           </div>
         </div>
-
-        {/* Bottom bar */}
-        <div className="footer-bottom-bar">
-          <span>© {new Date().getFullYear()} SkillSwap // ChidhiyaGHAR</span>
-          <span>All rights reserved by SKILLSWAP.ORG</span>
+        <div className="max-w-container-max mx-auto px-margin-desktop py-8 border-t border-outline-variant text-center">
+          <p className="font-label-sm text-label-sm text-outline">Designed with the Spark of Innovation. SkillSwap © {new Date().getFullYear()}</p>
         </div>
       </footer>
     </>

@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SkillSwap | Matches & Messages</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@500&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@100..900&family=JetBrains+Mono:wght@100..900&family=Sora:wght@100..900&display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .chat-gradient-bg {
+            background: radial-gradient(circle at top right, rgba(0, 240, 255, 0.05), transparent),
+                        radial-gradient(circle at bottom left, rgba(125, 1, 177, 0.05), transparent);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #3b494b;
+            border-radius: 10px;
+        }
+        .message-bubble-in {
+            border-bottom-left-radius: 2px;
+        }
+        .message-bubble-out {
+            border-bottom-right-radius: 2px;
+            background: linear-gradient(135deg, #006970 0%, #004f54 100%);
+        }
+        .glow-cyan {
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.15);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-container": "#006970",
+                        "on-primary": "#00363a",
+                        "tertiary": "#fff3f3",
+                        "surface-variant": "#333539",
+                        "on-tertiary-container": "#be003b",
+                        "on-error": "#690005",
+                        "error": "#ffb4ab",
+                        "surface-container-low": "#1a1c20",
+                        "surface-container": "#1e2024",
+                        "outline": "#849495",
+                        "surface-container-high": "#282a2e",
+                        "surface-container-lowest": "#0c0e12",
+                        "on-secondary-fixed": "#310048",
+                        "surface-bright": "#37393e",
+                        "secondary-fixed": "#f6d9ff",
+                        "on-secondary-fixed-variant": "#7200a3",
+                        "surface": "#111318",
+                        "secondary-container": "#7d01b1",
+                        "surface-dim": "#111318",
+                        "primary-fixed-dim": "#00dbe9",
+                        "inverse-primary": "#006970",
+                        "tertiary-container": "#ffcdcf",
+                        "on-tertiary-fixed": "#40000e",
+                        "tertiary-fixed": "#ffdadb",
+                        "inverse-surface": "#e2e2e8",
+                        "secondary": "#e9b3ff",
+                        "tertiary-fixed-dim": "#ffb2b7",
+                        "outline-variant": "#3b494b",
+                        "on-primary-fixed-variant": "#004f54",
+                        "on-background": "#e2e2e8",
+                        "primary": "#dbfcff",
+                        "primary-container": "#00f0ff",
+                        "secondary-fixed-dim": "#e9b3ff",
+                        "surface-container-highest": "#333539",
+                        "on-tertiary": "#67001c",
+                        "on-secondary": "#510074",
+                        "inverse-on-surface": "#2f3035",
+                        "on-tertiary-fixed-variant": "#91002b",
+                        "on-surface-variant": "#b9cacb",
+                        "on-secondary-container": "#e5a9ff",
+                        "error-container": "#93000a",
+                        "on-surface": "#e2e2e8",
+                        "on-primary-fixed": "#002022",
+                        "primary-fixed": "#7df4ff",
+                        "on-error-container": "#ffdad6",
+                        "background": "#111318",
+                        "surface-tint": "#00dbe9"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-desktop": "64px",
+                        "gutter": "24px",
+                        "margin-mobile": "16px",
+                        "section-gap": "120px",
+                        "container-max": "1280px",
+                        "base": "8px"
+                    },
+                    "fontFamily": {
+                        "headline-xl-mobile": ["Sora"],
+                        "body-lg": ["Hanken Grotesk"],
+                        "headline-md": ["Sora"],
+                        "label-sm": ["JetBrains Mono"],
+                        "display-lg": ["Sora"],
+                        "headline-xl": ["Sora"],
+                        "body-md": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "headline-xl-mobile": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "500"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                        "display-lg": ["64px", {"lineHeight": "72px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-xl": ["40px", {"lineHeight": "48px", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-hidden h-screen flex flex-col">
+<!-- Top Navigation Bar -->
+<header class="w-full top-0 sticky border-b border-outline-variant bg-surface z-50">
+<div class="max-w-container-max mx-auto px-margin-desktop flex justify-between items-center h-20">
+<div class="flex items-center gap-8">
+<span class="font-headline-md text-headline-md font-bold text-primary">SkillSwap</span>
+<nav class="hidden md:flex gap-6 items-center">
+<a class="text-on-surface-variant font-body-md hover:text-primary transition-colors duration-200" href="#">Browse Skills</a>
+<a class="text-primary font-bold border-b-2 border-primary pb-1 transition-colors duration-200" href="#">My Matches</a>
+<a class="text-on-surface-variant font-body-md hover:text-primary transition-colors duration-200" href="#">Schedule</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden md:flex items-center bg-surface-container px-4 py-2 rounded-full border border-outline-variant">
+<span class="material-symbols-outlined text-outline text-[20px] mr-2">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-body-md w-48 text-on-surface placeholder:text-outline" placeholder="Search matches..." type="text"/>
+</div>
+<div class="w-10 h-10 rounded-full border-2 border-primary-container overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional close-up portrait of a user for their digital profile avatar. The person has a friendly expression, captured with cinematic lighting in a modern workspace environment. The background is a soft bokeh of a high-tech lab with cyan and purple neon accents, maintaining the SkillSwap brand aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsmrOzf9HDT67EzzFuoKBO3xSw-kn3Pg9jNbgRTx5cK-2MA_KghSYEyia9ks_G6kl_XB9pe3_osU_YYvBXc3JYsoqne3WHm2i3lcE4Cvu3zcP1cTJzfVsO6GAEFSZ0S0CXA3DndyuFpfgo9EpdUvvzIKWgAieXItbSat5gYk7T1DH_EtgXjYgk5ELi0Q-Uspp6n2ZUH1HbzdJdVMUIosavJPtboXmyhhycvOtpN2D2l8VUm4e9fzIkCD37umDxvJyHAAfKwofXPJ8"/>
+</div>
+</div>
+</div>
+</header>
+<main class="flex-1 flex overflow-hidden max-w-container-max mx-auto w-full">
+<!-- Sidebar: Active Chats/Matches -->
+<aside class="w-full md:w-80 lg:w-96 border-r border-outline-variant flex flex-col bg-surface-container-lowest">
+<div class="p-6 border-b border-outline-variant">
+<div class="flex items-center justify-between mb-4">
+<h1 class="font-headline-md text-headline-md text-on-surface">Matches</h1>
+<button class="text-primary-container hover:bg-primary-container/10 p-2 rounded-full transition-all active:scale-95">
+<span class="material-symbols-outlined">edit_square</span>
+</button>
+</div>
+<div class="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
+<div class="flex-shrink-0 flex flex-col items-center gap-1 group cursor-pointer">
+<div class="w-14 h-14 rounded-full p-0.5 border-2 border-primary-container">
+<img class="w-full h-full rounded-full object-cover" data-alt="A portrait of a young woman with creative lighting, part of a learning community. She is wearing modern headphones, suggesting a focus on audio or video editing skills. The aesthetic is clean, professional, and slightly futuristic with deep navy and vibrant cyan highlights." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBqHgIkuwhJ065h9Gul-yYKRkESESEbKV8AZ2rolrJF2EZQIkWpnSzCl4dvqLh4SAcNKKa9FrwNdTxSt7ETmpFy7HAzV7PyzmOhD4tavxeVC0pAn1Abs7Ze0Iq8Ewx9z3DzyFC8TUSeihgtlKgoVsFJe1qz-wJAcshi0MJlFoHwi5WzvYuHX1khCH4aDxJRB3RXr8V1rQY5no45MhEeOabZxtn_Rr_KKhfzjsPDDhQ0D8fqswtTe1TLHPrgzxu7zcB7Lw0GwPSQ_p4"/>
+</div>
+<span class="text-label-sm text-on-surface-variant group-hover:text-primary transition-colors">You</span>
+</div>
+<!-- Story-style Match Indicators -->
+<div class="flex-shrink-0 flex flex-col items-center gap-1 group cursor-pointer">
+<div class="w-14 h-14 rounded-full p-0.5 border-2 border-secondary-container">
+<img class="w-full h-full rounded-full object-cover" data-alt="Close up of a mentor with gray hair and glasses, representing expertise and wisdom in the SkillSwap platform. Warm but high-tech lighting illuminates the face, with subtle purple glow from a nearby computer screen. Professional and trustworthy appearance." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBUFDAW5ubiNRLdQvzu2LoJl06yLXysxDkYoLva8f95QKDPVz3noHsy41FaaeXJCkM6k7a3AbZIIcjcjrIl_dQcQQCfz-etcRkWiO_ZAjWsfsHBWJ_cN8rENpbxfMersCAYOA7iATbt4OIGlS_7sC7KBbKFxH4nrQN4_l6BA8HsHFx8Uf0byg8psju9FGjp8PsDZlcHLu_0q2va_a2qmGUJQ89bZu39pjl9KanL4xf1ZCAx70_HEBW3AmXCqaY8iPE_jntOPMuMr-4"/>
+</div>
+<span class="text-label-sm text-on-surface-variant group-hover:text-primary transition-colors">Dr. Aris</span>
+</div>
+</div>
+</div>
+<!-- Chat List -->
+<div class="flex-1 overflow-y-auto custom-scrollbar">
+<!-- Active Chat -->
+<div class="p-4 flex items-center gap-4 bg-surface-container-high border-l-4 border-primary-container cursor-pointer transition-all">
+<div class="relative">
+<div class="w-14 h-14 rounded-full overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A headshot of a creative professional for a chat interface. The person is looking directly at the camera with a confident smile. Soft purple and blue lighting creates a sophisticated, modern tech-startup vibe that matches a dark mode UI." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDYz4K_U_WjnqhUFUQifrOrIe0goabphDJ5l3iMrcRANfP8bBFcvgnDRuHkc4UGcnQAwCMvY_w0Np9NTdGH8dak33yBVgQ-P_vXlt4Nsiwk6lCrL3Mjz8HY0UtkzKh_ydS17kApFcVke-8T8rSqDq01h41_xOeOWAPlP8mAsqmb8BWnyyesO2yKX4wg5JxSaXZ-DiaylGK8X6nCAKES-s7TxwjQkL9Ab0cuiaMMvVJMSadFK2SkGBQ0s-qpI3WxKsII_DQGCBPXls"/>
+</div>
+<div class="absolute bottom-0 right-0 w-4 h-4 bg-primary-container rounded-full border-2 border-surface-container-high"></div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-center mb-1">
+<span class="font-bold text-on-surface truncate">Elena Vance</span>
+<span class="text-label-sm text-primary-container">12:45 PM</span>
+</div>
+<div class="flex justify-between items-center">
+<p class="text-body-md text-on-surface-variant truncate">That layout looks incredible! Let's...</p>
+<span class="bg-primary-container text-on-primary-container text-[10px] font-bold px-1.5 py-0.5 rounded-full">2</span>
+</div>
+</div>
+</div>
+<!-- Chat Item 2 -->
+<div class="p-4 flex items-center gap-4 hover:bg-surface-container transition-all cursor-pointer border-b border-outline-variant/30">
+<div class="relative">
+<div class="w-14 h-14 rounded-full overflow-hidden opacity-80">
+<img class="w-full h-full object-cover" data-alt="A profile photo of a software developer, showing a person in their late 20s with glasses, focused and friendly. The scene is illuminated by the glow of multiple monitors, showing lines of code reflected in the glasses. Deep blacks and electric cyan tones define the lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuArJ1QvAHid4MwTSHsyMc6qVts5OcgrjcdBLjUs4VoiDdUhdQRL0d5CHAEIxXucr59wZ8sGUrFho57eLdhlkEpKqbJZS6ngbex4WPeN6heGNz_yl78uBFxf5cwYAIIHpRhjaLSP0g-CU5ndA4T8utZ7T0trx4bAu3UVFQitRPrQB2qfM0IzbA_zeANVGcenxLUFUfGI14smHKDdWR59CS1JnBfWanT5hhN18a4gY5mWsoNSMiuJdk4S-mvTk3UOZQWiYZUExXuIUXw"/>
+</div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-center mb-1">
+<span class="font-bold text-on-surface truncate">Marcus Chen</span>
+<span class="text-label-sm text-outline">Yesterday</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-primary-container" style="font-variation-settings: 'FILL' 1;">done_all</span>
+<p class="text-body-md text-outline truncate">Thanks for the Python tips!</p>
+</div>
+</div>
+</div>
+<!-- Chat Item 3 -->
+<div class="p-4 flex items-center gap-4 hover:bg-surface-container transition-all cursor-pointer border-b border-outline-variant/30">
+<div class="relative">
+<div class="w-14 h-14 rounded-full overflow-hidden opacity-80">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a UI/UX designer. The background features blurred abstract geometric shapes in shades of purple and pink. The lighting is crisp and clear, highlighting a friendly and approachable demeanor." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA5JecUR-ExYCKpuxvegJqzOMcEur5fDqEIWX1-6ZImG4x8t7rkE3919TP0Ssrbc7ZoNlxrGAKRzw_P8paHTMbzUb9Novgo2bRHpwVK9zKCIBzceCpvY2Xt3Kj7RwxCt-R9PwdrZivHubpY4Jdh6mt5CAQuvhHXqb19FU8o7MMVb2_9anBoHbqLAuZjeH4qmRnVIyHOFe-Mug8WGpymV1JlvaVBQcIkjLIcRYNuyA3ONL_C98YsXdBGk5UYOqmUpjG8y-5IOlN0OhA"/>
+</div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-center mb-1">
+<span class="font-bold text-on-surface truncate">Sarah Jenkins</span>
+<span class="text-label-sm text-outline">Tue</span>
+</div>
+<div class="flex items-center gap-1">
+<p class="text-body-md text-outline truncate">Are we still on for our Figma session?</p>
+</div>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Message Window -->
+<section class="flex-1 flex flex-col relative chat-gradient-bg">
+<!-- Chat Header -->
+<header class="h-20 px-6 border-b border-outline-variant bg-surface/80 backdrop-blur-md flex items-center justify-between z-10">
+<div class="flex items-center gap-4">
+<button class="md:hidden text-on-surface mr-2">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<div class="relative">
+<div class="w-12 h-12 rounded-full overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="Detailed portrait of Elena Vance, a UI designer. She has a modern, artistic look with subtle neon-inspired makeup accents. She is in a high-tech studio environment. The lighting is cool-toned with electric cyan highlights and deep navy shadows, perfect for a dark mode interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDp8PpxEj1ZY8EBSdK1dcT7JiKxdXZqOZK8F1hi_xY6kY6HSdFR4kjPNhz9GU2JP4GX5T2UVAXr51zaO3CZqCW8oVs3A6urnIW7W8WAQc1mc3IMsTr78MT_PVj6DzW0mMFLEdNdq9wCjOYezQjWtcXQiMfDl-yhQLcfdQWjwLF7MKb0uJuQIXOI5J0tINwtYjthYRtZMrXfbM07BHdPD_ieHSB0rOdZs15ZAE8mGwBO5TBTZn3sNEWfoykX1vUhy-pBEMrhdZaiGHg"/>
+</div>
+<div class="absolute bottom-0 right-0 w-3 h-3 bg-primary-container rounded-full border-2 border-surface"></div>
+</div>
+<div>
+<h2 class="font-bold text-on-surface">Elena Vance</h2>
+<span class="text-label-sm text-primary-container">Active now</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="w-10 h-10 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container transition-all">
+<span class="material-symbols-outlined">videocam</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container transition-all">
+<span class="material-symbols-outlined">call</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container transition-all">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</header>
+<!-- Messages Area -->
+<div class="flex-1 overflow-y-auto p-6 flex flex-col gap-6 custom-scrollbar">
+<!-- Date Separator -->
+<div class="flex justify-center">
+<span class="bg-surface-container text-label-sm text-outline px-4 py-1 rounded-full border border-outline-variant/30">Today</span>
+</div>
+<!-- Message Received -->
+<div class="flex items-end gap-3 max-w-[80%]">
+<div class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="Small thumbnail profile image of Elena Vance, a professional woman with creative lighting. The aesthetic matches the dark-themed UI with deep blues and cyan accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVzQDnsX2g5IirNO5nVg_Rwqkj8CMpmT1bXXaQrJsjsQfSVi9r3IPcdPYKoDCvVacKUbfU5ALRMU6eRZRjniqVK0gMx03y4WWHaJlyVoZu2VnGcGI11AS7L4BG2ltIbE9B2Z74n-l8J7RZd5mRdr5cDqqfOmsrqd7bCwNUfMcEYsUQncWNTzohZbeOgwSKTWRmeYfG3E0fT-tF_wuZ-ikhYXwOmznWIWymIwVW4a2_LmtDhqPLEQePzZ2JFOfgV3NQ3nzYX9_M2sE"/>
+</div>
+<div class="flex flex-col gap-1">
+<div class="bg-surface-container-high text-on-surface p-4 rounded-2xl rounded-bl-none message-bubble-in border border-outline-variant/20 shadow-sm">
+<p class="text-body-md">Hey! I've been reviewing the new bento grid design for the landing page. It looks sharp! 🚀</p>
+</div>
+<span class="text-label-sm text-outline ml-1">12:30 PM</span>
+</div>
+</div>
+<!-- Message Sent -->
+<div class="flex flex-col items-end gap-1 ml-auto max-w-[80%]">
+<div class="message-bubble-out text-on-primary p-4 rounded-2xl rounded-br-none shadow-lg glow-cyan">
+<p class="text-body-md">Thanks Elena! I was trying to balance the Cyber-Minimalist vibe with clean functionality. Did the neon accents feel too much?</p>
+</div>
+<div class="flex items-center gap-1 mr-1">
+<span class="text-label-sm text-outline">12:35 PM</span>
+<span class="material-symbols-outlined text-[16px] text-primary-container" style="font-variation-settings: 'FILL' 1;">done_all</span>
+</div>
+</div>
+<!-- Message Received with Image Attachment -->
+<div class="flex items-end gap-3 max-w-[80%]">
+<div class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="Small thumbnail profile image of Elena Vance, looking friendly and professional." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBRtm_PQtscNPZpVHyWyNVFXsyGDP0ovqo2Wzj7he8QdD86z86g4nmbRrOOCSv6-3Sh6XVpbxm3fxKKyIT29NTYsvPRDaYtznzTBkaT5q6wXcNsafYmgobGVTojCZedM-ETiWqTqY9SwPgLWqa6sKrGjNpWjSUzd1fI_NuMsDfSoA3DV7Dp4SReelxqGoEys-6RxQ2R_5uMINI2aeggmtQK0-q4xRirIQhZ2rSyzJAF-QPMs7W5mq38Brm5YaHwPZ6Z7U8YtgbxcH0"/>
+</div>
+<div class="flex flex-col gap-1 w-full">
+<div class="bg-surface-container-high text-on-surface p-2 rounded-2xl rounded-bl-none border border-outline-variant/20 overflow-hidden">
+<div class="rounded-xl overflow-hidden mb-2">
+<img class="w-full h-48 object-cover" data-alt="A screenshot of a sleek mobile app dashboard with dark mode UI, featuring neon cyan and purple progress charts, rounded cards, and a clean systematic layout. The design is high-end, featuring glassmorphism and soft ambient glows." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCOeW3CVGe4Fuxd-JAFfXKTO-DqiGjjaVpgb8SGmR2fjAdAZTNf9bwFfQJUGiZAr7d0VNq6cxFo7FagHGaNF9X1TIXDryvVOfN6kAc4ykl02-cDXEKgg3dGQjWAFXsWxMW4goxNcq1tAebmsl24DgnfDXJsL0IhbD44agU7Le2eJiB_MMq85LnoSizAGRoDIQGYdzqZllhVdr9kdmaA7jpOWNmTj8-Tm8JnE-alm4Vo5qQQfmXMHCchZjhfb5lapoN3xSHMXyetuEY"/>
+</div>
+<div class="px-2 pb-2">
+<p class="text-body-md">Not at all! Check out how it looks on mobile. The "Spark" vs "Lab" transition is seamless. Great job on the tonal layering.</p>
+</div>
+</div>
+<span class="text-label-sm text-outline ml-1">12:40 PM</span>
+</div>
+</div>
+<!-- Message Sent -->
+<div class="flex flex-col items-end gap-1 ml-auto max-w-[80%]">
+<div class="message-bubble-out text-on-primary p-4 rounded-2xl rounded-br-none shadow-lg glow-cyan">
+<p class="text-body-md">That layout looks incredible! Let's discuss the collaboration indicators next session. Maybe we can use the JetBrains Mono for those status chips?</p>
+</div>
+<div class="flex items-center gap-1 mr-1">
+<span class="text-label-sm text-outline">12:45 PM</span>
+<span class="material-symbols-outlined text-[16px] text-primary-container" style="font-variation-settings: 'FILL' 1;">done_all</span>
+</div>
+</div>
+</div>
+<!-- Bottom Input Bar -->
+<footer class="p-6 bg-surface/80 backdrop-blur-md border-t border-outline-variant">
+<div class="flex items-end gap-4 max-w-4xl mx-auto">
+<div class="flex items-center gap-2 pb-1">
+<button class="w-10 h-10 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container transition-all active:scale-90">
+<span class="material-symbols-outlined">add_circle</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container transition-all active:scale-90">
+<span class="material-symbols-outlined">mood</span>
+</button>
+</div>
+<div class="flex-1 bg-surface-container rounded-2xl border border-outline-variant px-4 py-3 flex items-center focus-within:ring-2 focus-within:ring-primary-container focus-within:glow-cyan transition-all">
+<textarea class="flex-1 bg-transparent border-none focus:ring-0 text-body-md text-on-surface placeholder:text-outline resize-none max-h-32 custom-scrollbar" placeholder="Type a message..." rows="1"></textarea>
+<button class="text-on-surface-variant hover:text-primary-container transition-colors">
+<span class="material-symbols-outlined">attach_file</span>
+</button>
+</div>
+<button class="w-12 h-12 bg-primary-container text-on-primary rounded-full flex items-center justify-center shadow-lg hover:shadow-primary-container/20 transition-all active:scale-95 group">
+<span class="material-symbols-outlined group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform">send</span>
+</button>
+</div>
+</footer>
+</section>
+</main>
+<!-- Footer: Shared Component -->
+<footer class="w-full mt-auto bg-surface-container-lowest border-t border-outline-variant">
+<div class="max-w-container-max mx-auto px-margin-desktop py-8 grid grid-cols-1 md:grid-cols-12 gap-gutter items-center">
+<div class="md:col-span-4">
+<span class="font-headline-md text-headline-md text-primary block mb-2">SkillSwap</span>
+<p class="text-label-sm text-on-surface-variant">© 2024 SkillSwap Lab. Empowering the Spark of Learning.</p>
+</div>
+<div class="md:col-span-8 flex flex-wrap justify-end gap-x-8 gap-y-4">
+<a class="text-label-sm text-on-surface-variant hover:text-secondary-fixed-dim transition-colors" href="#">Community Guidelines</a>
+<a class="text-label-sm text-on-surface-variant hover:text-secondary-fixed-dim transition-colors" href="#">Safety Center</a>
+<a class="text-label-sm text-on-surface-variant hover:text-secondary-fixed-dim transition-colors" href="#">Leaderboard</a>
+<a class="text-label-sm text-on-surface-variant hover:text-secondary-fixed-dim transition-colors" href="#">Discord</a>
+<a class="text-label-sm text-on-surface-variant hover:text-secondary-fixed-dim transition-colors" href="#">Help Desk</a>
+</div>
+</div>
+</footer>
+<script>
+        // Micro-interaction for the textarea auto-resize
+        const tx = document.getElementsByTagName("textarea");
+        for (let i = 0; i < tx.length; i++) {
+            tx[i].setAttribute("style", "height:" + (tx[i].scrollHeight) + "px;overflow-y:hidden;");
+            tx[i].addEventListener("input", OnInput, false);
+        }
+
+        function OnInput() {
+            this.style.height = "auto";
+            this.style.height = (this.scrollHeight) + "px";
+        }
+
+        // Simple mock for scroll-to-bottom
+        window.onload = () => {
+            const chatArea = document.querySelector('.flex-1.overflow-y-auto.p-6');
+            chatArea.scrollTop = chatArea.scrollHeight;
+        };
+    </script>
+</body></html>

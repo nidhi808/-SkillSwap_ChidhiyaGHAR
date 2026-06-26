@@ -64,22 +64,36 @@ const getMyProfile = async (req, res, next) => {
 const getPublicProfile = async (req, res, next) => {
   try {
     const { userId } = req.params
-    const { data: profile } = await supabaseAdmin
-      .from('profiles')
+    const { data: user, error } = await supabaseAdmin
+      .from('users')
       .select(`
-        id, full_name, avatar_url, cover_url, bio, timezone, location, city, country_code,
-        website_url, github_url, linkedin_url, twitter_url,
-        is_verified_mentor, teaching_hours, learning_hours, total_sessions,
-        avg_rating, total_reviews, reputation_points, followers_count, following_count, created_at,
-        users:id (username, role),
-        user_skills_offered (id, proficiency_level, years_experience, description, skills(id, name, slug, skill_categories(name))),
-        user_skills_wanted (id, current_level, target_level, urgency, skills(id, name, slug))
+        id,
+        profile:profiles (
+          id, full_name, avatar_url, cover_url, bio, timezone, location, city, country_code,
+          website_url, github_url, linkedin_url, twitter_url,
+          is_verified_mentor, teaching_hours, learning_hours, total_sessions,
+          avg_rating, total_reviews, reputation_points, followers_count, following_count, created_at,
+          user_skills_offered (id, proficiency_level, years_experience, description, skills(id, name, slug, skill_categories(name))),
+          user_skills_wanted (id, current_level, target_level, urgency, skills(id, name, slug))
+        ),
+        username, role
       `)
       .eq('id', userId)
       .single()
 
-    if (!profile) return res.status(404).json({ error: 'Profile not found.' })
-    return res.status(200).json({ data: profile })
+    if (error) throw error
+    if (!user || !user.profile) return res.status(404).json({ error: 'Profile not found.' })
+
+    // Flatten the response so it matches the old shape (the profile itself is the data)
+    const profileData = {
+      ...user.profile,
+      users: {
+        username: user.username,
+        role: user.role
+      }
+    }
+
+    return res.status(200).json({ data: profileData })
   } catch (err) { next(err) }
 }
 

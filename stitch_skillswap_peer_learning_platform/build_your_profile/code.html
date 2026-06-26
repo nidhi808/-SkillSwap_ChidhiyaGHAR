@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SkillSwap | Profile Builder</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&amp;family=Hanken+Grotesk:wght@400;500;600&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error": "#690005",
+                        "surface-container-highest": "#333539",
+                        "error-container": "#93000a",
+                        "on-tertiary-fixed": "#40000e",
+                        "on-surface-variant": "#b9cacb",
+                        "on-secondary-fixed": "#310048",
+                        "outline": "#849495",
+                        "on-error-container": "#ffdad6",
+                        "primary": "#dbfcff",
+                        "surface-bright": "#37393e",
+                        "surface-tint": "#00dbe9",
+                        "surface-variant": "#333539",
+                        "on-background": "#e2e2e8",
+                        "tertiary-fixed": "#ffdadb",
+                        "tertiary-container": "#ffcdcf",
+                        "surface-container-high": "#282a2e",
+                        "secondary-fixed-dim": "#e9b3ff",
+                        "surface-container-lowest": "#0c0e12",
+                        "tertiary": "#fff3f3",
+                        "on-surface": "#e2e2e8",
+                        "primary-fixed": "#7df4ff",
+                        "surface": "#111318",
+                        "error": "#ffb4ab",
+                        "primary-fixed-dim": "#00dbe9",
+                        "secondary-container": "#7d01b1",
+                        "inverse-primary": "#006970",
+                        "inverse-on-surface": "#2f3035",
+                        "on-primary-fixed-variant": "#004f54",
+                        "primary-container": "#00f0ff",
+                        "tertiary-fixed-dim": "#ffb2b7",
+                        "on-tertiary": "#67001c",
+                        "outline-variant": "#3b494b",
+                        "surface-dim": "#111318",
+                        "secondary": "#e9b3ff",
+                        "on-secondary-container": "#e5a9ff",
+                        "on-primary": "#00363a",
+                        "on-tertiary-fixed-variant": "#91002b",
+                        "secondary-fixed": "#f6d9ff",
+                        "inverse-surface": "#e2e2e8",
+                        "on-secondary-fixed-variant": "#7200a3",
+                        "background": "#111318",
+                        "on-tertiary-container": "#be003b",
+                        "surface-container": "#1e2024",
+                        "surface-container-low": "#1a1c20",
+                        "on-secondary": "#510074",
+                        "on-primary-container": "#006970",
+                        "on-primary-fixed": "#002022"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "section-gap": "120px",
+                        "base": "8px",
+                        "margin-desktop": "64px",
+                        "gutter": "24px",
+                        "container-max": "1280px"
+                    },
+                    "fontFamily": {
+                        "headline-xl": ["Sora"],
+                        "body-md": ["Hanken Grotesk"],
+                        "body-lg": ["Hanken Grotesk"],
+                        "headline-md": ["Sora"],
+                        "headline-xl-mobile": ["Sora"],
+                        "display-lg": ["Sora"],
+                        "label-sm": ["JetBrains Mono"]
+                    },
+                    "fontSize": {
+                        "headline-xl": ["40px", {"lineHeight": "48px", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "500"}],
+                        "headline-xl-mobile": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                        "display-lg": ["64px", {"lineHeight": "72px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(22, 27, 34, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .neon-glow-cyan {
+            box-shadow: 0 0 15px rgba(0, 219, 233, 0.3);
+        }
+        .neon-glow-purple {
+            box-shadow: 0 0 15px rgba(233, 179, 255, 0.3);
+        }
+        .skill-chip-expert {
+            background: linear-gradient(90deg, #00dbe9, #e9b3ff);
+            color: #111318;
+        }
+        .spark-bg {
+            background: radial-gradient(circle at 50% -20%, rgba(0, 219, 233, 0.15), transparent 70%);
+        }
+        .transition-all {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md selection:bg-primary-container selection:text-on-primary-container min-h-screen overflow-x-hidden">
+<!-- TopNavBar (Shared Component Guide) -->
+<header class="w-full top-0 sticky z-50 bg-surface border-b border-outline-variant">
+<div class="max-w-container-max mx-auto px-margin-desktop flex justify-between items-center h-20">
+<div class="flex items-center gap-base">
+<span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings: 'FILL' 1;">bolt</span>
+<span class="font-headline-md text-headline-md font-bold text-primary">SkillSwap</span>
+</div>
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-on-surface-variant font-body-md hover:text-primary transition-colors duration-200" href="#">Browse Skills</a>
+<a class="text-on-surface-variant font-body-md hover:text-primary transition-colors duration-200" href="#">My Matches</a>
+<a class="text-on-surface-variant font-body-md hover:text-primary transition-colors duration-200" href="#">Schedule</a>
+</nav>
+<div class="flex items-center gap-4">
+<div class="hidden sm:flex flex-col items-end">
+<span class="text-label-sm font-label-sm text-secondary uppercase tracking-widest">Builder Mode</span>
+<span class="text-body-md font-body-md text-on-surface-variant">Profile Setup</span>
+</div>
+<div class="w-10 h-10 rounded-full border-2 border-primary overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A futuristic 3D avatar profile picture of a young professional student. The character has a stylish tech-inspired outfit with glowing neon cyan accents. The background is a soft, dark laboratory setting with blurred computer monitors. High-end digital art style with soft rim lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQqsNppRtsRejQawMAghHeTkhSnNC3_nk6N4O7e_mRMv0JeQUyDVT56M-BKnudsE9aZ-1UnjEksGoC5vAdrSgIU92is5SI3Vl5uCHDjNRevQgAQ0jQ7m_gAJBq-ILIBtTJUjb-BnztroLODnlDKEZO9Gi2xuDhr3TsvEMFcS0t8GaSYTaC8smjU76w5gr0izkWXDSaAZ6AYMXBaaVd2upqlAhTowThp05FTqxJdEPUe1ahMtxiEUkNicNrAqOWGBbQz2_lxFD-uW8"/>
+</div>
+</div>
+</div>
+</header>
+<main class="relative spark-bg pt-12 pb-24 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto">
+<!-- Progress Stepper -->
+<div class="max-w-4xl mx-auto mb-12">
+<div class="flex items-center justify-between relative">
+<div class="absolute top-1/2 left-0 w-full h-[2px] bg-surface-container-highest -translate-y-1/2 z-0"></div>
+<div class="absolute top-1/2 left-0 w-1/3 h-[2px] bg-gradient-to-r from-primary to-secondary -translate-y-1/2 z-0 transition-all duration-500" id="progress-bar"></div>
+<div class="relative z-10 flex flex-col items-center">
+<div class="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold neon-glow-cyan">1</div>
+<span class="mt-2 text-label-sm font-label-sm text-primary">Basics</span>
+</div>
+<div class="relative z-10 flex flex-col items-center">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-bold border border-outline-variant">2</div>
+<span class="mt-2 text-label-sm font-label-sm text-on-surface-variant">Skills</span>
+</div>
+<div class="relative z-10 flex flex-col items-center">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-bold border border-outline-variant">3</div>
+<span class="mt-2 text-label-sm font-label-sm text-on-surface-variant">Review</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter items-start">
+<!-- Form Section -->
+<section class="lg:col-span-7 space-y-8">
+<div class="glass-panel p-8 rounded-xl">
+<div class="space-y-6" id="step-1">
+<div class="border-l-4 border-primary pl-4">
+<h1 class="font-headline-xl text-headline-xl text-on-background">Tell us about yourself</h1>
+<p class="text-body-lg text-on-surface-variant mt-2">The Spark starts with your story. Let others know who you are.</p>
+</div>
+<div class="space-y-4 pt-4">
+<div class="space-y-2">
+<label class="text-label-sm font-label-sm text-primary uppercase">Full Name</label>
+<input class="w-full bg-surface-container-low border border-outline-variant rounded-lg p-4 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="Alex Rivera" type="text"/>
+</div>
+<div class="space-y-2">
+<label class="text-label-sm font-label-sm text-primary uppercase">College / Institution</label>
+<input class="w-full bg-surface-container-low border border-outline-variant rounded-lg p-4 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="University of Innovation" type="text"/>
+</div>
+<div class="space-y-2">
+<label class="text-label-sm font-label-sm text-primary uppercase">Bio</label>
+<textarea class="w-full bg-surface-container-low border border-outline-variant rounded-lg p-4 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="Share your journey, interests, and what drives your curiosity..." rows="4"></textarea>
+</div>
+</div>
+<div class="flex justify-end pt-6">
+<button class="bg-primary text-on-primary px-8 py-3 rounded-lg font-bold hover:scale-105 active:scale-95 transition-all flex items-center gap-2 neon-glow-cyan" onclick="nextStep(2)">
+                                Next: Add Skills <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+<div class="hidden space-y-6" id="step-2">
+<div class="border-l-4 border-secondary pl-4">
+<h1 class="font-headline-xl text-headline-xl text-on-background">Define your Spark</h1>
+<p class="text-body-lg text-on-surface-variant mt-2">What can you teach? What do you want to master?</p>
+</div>
+<div class="space-y-8 pt-4">
+<!-- Skills I Can Teach -->
+<div class="space-y-4">
+<div class="flex justify-between items-center">
+<h3 class="font-headline-md text-headline-md text-secondary">Skills I Can Teach</h3>
+<span class="text-label-sm font-label-sm text-secondary-fixed-dim px-3 py-1 bg-secondary-container/20 rounded-full">Mentoring Mode</span>
+</div>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full bg-surface-container-low border border-outline-variant rounded-lg pl-12 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-secondary transition-all" placeholder="Search or type a skill..." type="text"/>
+</div>
+<div class="flex flex-wrap gap-2">
+<button class="px-4 py-2 rounded-full border border-secondary text-secondary font-label-sm text-label-sm hover:bg-secondary/10 transition-all">+ UI Design</button>
+<button class="px-4 py-2 rounded-full border border-secondary text-secondary font-label-sm text-label-sm hover:bg-secondary/10 transition-all">+ Python</button>
+<button class="px-4 py-2 rounded-full border border-secondary text-secondary font-label-sm text-label-sm hover:bg-secondary/10 transition-all">+ Public Speaking</button>
+<button class="px-4 py-2 rounded-full border border-secondary text-secondary font-label-sm text-label-sm hover:bg-secondary/10 transition-all">+ Photography</button>
+</div>
+<div class="p-4 bg-surface-container-highest/30 rounded-lg space-y-3">
+<div class="flex items-center justify-between bg-surface-container p-3 rounded-lg border border-outline-variant">
+<span class="font-body-md">UI Design</span>
+<select class="bg-surface-container-low border-none rounded text-label-sm font-label-sm text-primary focus:ring-0">
+<option>Beginner</option>
+<option selected="">Intermediate</option>
+<option>Expert</option>
+</select>
+</div>
+<div class="flex items-center justify-between bg-surface-container p-3 rounded-lg border border-outline-variant">
+<span class="font-body-md">Python</span>
+<select class="bg-surface-container-low border-none rounded text-label-sm font-label-sm text-primary focus:ring-0">
+<option>Beginner</option>
+<option>Intermediate</option>
+<option selected="">Expert</option>
+</select>
+</div>
+</div>
+</div>
+<!-- Skills I Want To Learn -->
+<div class="space-y-4">
+<div class="flex justify-between items-center">
+<h3 class="font-headline-md text-headline-md text-primary">Skills I Want to Learn</h3>
+<span class="text-label-sm font-label-sm text-primary-fixed-dim px-3 py-1 bg-primary-container/10 rounded-full">Learning Mode</span>
+</div>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full bg-surface-container-low border border-outline-variant rounded-lg pl-12 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary transition-all" placeholder="Search or type a skill..." type="text"/>
+</div>
+<div class="flex flex-wrap gap-2">
+<button class="px-4 py-2 rounded-full border border-primary text-primary font-label-sm text-label-sm hover:bg-primary/10 transition-all">+ React</button>
+<button class="px-4 py-2 rounded-full border border-primary text-primary font-label-sm text-label-sm hover:bg-primary/10 transition-all">+ Spanish</button>
+<button class="px-4 py-2 rounded-full border border-primary text-primary font-label-sm text-label-sm hover:bg-primary/10 transition-all">+ Data Science</button>
+<button class="px-4 py-2 rounded-full border border-primary text-primary font-label-sm text-label-sm hover:bg-primary/10 transition-all">+ Guitar</button>
+</div>
+</div>
+</div>
+<div class="flex justify-between pt-6">
+<button class="text-on-surface-variant px-8 py-3 rounded-lg font-bold hover:text-primary transition-all flex items-center gap-2" onclick="nextStep(1)">
+<span class="material-symbols-outlined">arrow_back</span> Back
+                            </button>
+<button class="bg-primary text-on-primary px-8 py-3 rounded-lg font-bold hover:scale-105 active:scale-95 transition-all flex items-center gap-2 neon-glow-cyan" onclick="nextStep(3)">
+                                Finish Profile <span class="material-symbols-outlined">check_circle</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Preview Card Section -->
+<aside class="lg:col-span-5 sticky top-32">
+<div class="space-y-4">
+<h3 class="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-widest text-center">Live Card Preview</h3>
+<!-- Profile Card -->
+<div class="glass-panel rounded-2xl overflow-hidden group transition-all hover:border-primary/50">
+<div class="h-32 bg-gradient-to-r from-primary-container/20 to-secondary-container/20 relative overflow-hidden">
+<div class="absolute inset-0 opacity-30">
+
+</div>
+<div class="absolute -bottom-10 left-8">
+<div class="w-24 h-24 rounded-2xl border-4 border-surface overflow-hidden neon-glow-cyan">
+<img class="w-full h-full object-cover" data-alt="A professional close-up of a student smiling, wearing tech gear. Neon blue and purple light reflects on their glasses. The background is a clean, dark-themed digital workspace. High definition, vibrant colors, cinematic depth of field." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBiPSOE8QTR6FiNjsTKiQfpsiYkoBNLYz8XSFjDVSBBOPIcedD02tShXC5kn0MtrtvZbsMgrGglQXV7W8WbB7XBSGOG2Vm5btDrzudXOl7FUl1p4rp8Nto816Ux3zpGn-InrNIeR8XPlFOMXuCJ4O7kikTdK59vFHrGHCfL2-DxjJTGbtqwkvw2mxLVgop2QBFdPdMVgMvykgHDXM1V06bBQ3PGhlExULgfcachlf9puWP6a7dcgzxo2tl7nAT7DysGyXux8xm-Ly8"/>
+</div>
+</div>
+</div>
+<div class="pt-14 pb-8 px-8 space-y-6">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-background">Alex Rivera</h2>
+<p class="text-body-md text-primary font-medium">University of Innovation</p>
+</div>
+<p class="text-body-md text-on-surface-variant line-clamp-3">
+                                Aspiring creative developer passionate about bridging the gap between design and technology. I love helping others understand the foundations of UI design while I deep dive into complex data structures and Python algorithms.
+                            </p>
+<div class="space-y-4">
+<div class="space-y-2">
+<p class="text-label-sm font-label-sm text-secondary uppercase tracking-tighter">Teaching</p>
+<div class="flex flex-wrap gap-2">
+<span class="px-3 py-1 rounded-full bg-surface-container-high border border-outline-variant text-label-sm font-label-sm">UI Design <span class="text-secondary ml-1">• Int</span></span>
+<span class="px-3 py-1 rounded-full skill-chip-expert text-label-sm font-label-sm">Python <span class="ml-1">• Exp</span></span>
+</div>
+</div>
+<div class="space-y-2">
+<p class="text-label-sm font-label-sm text-primary uppercase tracking-tighter">Learning</p>
+<div class="flex flex-wrap gap-2">
+<span class="px-3 py-1 rounded-full bg-surface-container-high border border-outline-variant text-label-sm font-label-sm">React</span>
+<span class="px-3 py-1 rounded-full bg-surface-container-high border border-outline-variant text-label-sm font-label-sm">Spanish</span>
+</div>
+</div>
+</div>
+<div class="pt-4 border-t border-outline-variant flex justify-between items-center">
+<div class="flex -space-x-2">
+<div class="w-8 h-8 rounded-full border-2 border-surface bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-xs">person</span>
+</div>
+<div class="w-8 h-8 rounded-full border-2 border-surface bg-primary/20 flex items-center justify-center">
+<span class="text-[10px] font-bold text-primary">12+</span>
+</div>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">verified_user</span>
+<span class="text-label-sm font-label-sm">Ready to Swap</span>
+</div>
+</div>
+</div>
+</div>
+<div class="p-6 rounded-xl bg-surface-container-low border border-outline-variant border-dashed">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">lightbulb</span>
+<p class="text-body-md text-on-surface-variant">
+<strong class="text-secondary">Tip:</strong> Profiles with expert-level skills receive <span class="text-primary font-bold">40% more</span> match requests.
+                            </p>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</main>
+<!-- Footer (Shared Component Guide) -->
+<footer class="w-full mt-section-gap bg-surface-container-lowest border-t border-outline-variant">
+<div class="max-w-container-max mx-auto px-margin-desktop py-16 grid grid-cols-1 md:grid-cols-12 gap-gutter">
+<div class="md:col-span-4 space-y-6">
+<div class="flex items-center gap-base">
+<span class="material-symbols-outlined text-primary text-3xl">bolt</span>
+<span class="font-headline-md text-headline-md text-primary">SkillSwap Lab</span>
+</div>
+<p class="text-body-md text-on-surface-variant max-w-xs">
+                    Empowering the Spark of Learning through community-driven knowledge exchange. Build your future, one skill at a time.
+                </p>
+<div class="flex gap-4">
+<a class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined">share</span>
+</a>
+<a class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined">public</span>
+</a>
+</div>
+</div>
+<div class="md:col-span-2 space-y-4">
+<h4 class="font-label-sm text-label-sm text-secondary uppercase tracking-widest">Platform</h4>
+<ul class="space-y-2">
+<li><a class="text-body-md text-on-surface-variant hover:text-secondary-fixed-dim transition-colors" href="#">Leaderboard</a></li>
+<li><a class="text-body-md text-on-surface-variant hover:text-secondary-fixed-dim transition-colors" href="#">Discord</a></li>
+<li><a class="text-body-md text-on-surface-variant hover:text-secondary-fixed-dim transition-colors" href="#">Help Desk</a></li>
+</ul>
+</div>
+<div class="md:col-span-2 space-y-4">
+<h4 class="font-label-sm text-label-sm text-secondary uppercase tracking-widest">Legal</h4>
+<ul class="space-y-2">
+<li><a class="text-body-md text-on-surface-variant hover:text-secondary-fixed-dim transition-colors" href="#">Community Guidelines</a></li>
+<li><a class="text-body-md text-on-surface-variant hover:text-secondary-fixed-dim transition-colors" href="#">Safety Center</a></li>
+</ul>
+</div>
+<div class="md:col-span-4 flex flex-col items-start md:items-end justify-between">
+<div class="text-right">
+<p class="text-label-sm font-label-sm text-on-surface-variant">© 2024 SkillSwap Lab. Empowering the Spark of Learning.</p>
+</div>
+<div class="mt-8 md:mt-0 p-4 bg-surface-container-high rounded-xl flex items-center gap-4">
+<div class="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+<span class="text-label-sm font-label-sm text-on-surface-variant">System Status: All systems operational</span>
+</div>
+</div>
+</div>
+</footer>
+<script>
+        function nextStep(step) {
+            const step1 = document.getElementById('step-1');
+            const step2 = document.getElementById('step-2');
+            const progressBar = document.getElementById('progress-bar');
+            const stepIndicators = document.querySelectorAll('.relative.z-10 div');
+            const stepLabels = document.querySelectorAll('.relative.z-10 span');
+
+            if (step === 2) {
+                step1.classList.add('hidden');
+                step2.classList.remove('hidden');
+                progressBar.style.width = '66.6%';
+                
+                stepIndicators[1].classList.remove('bg-surface-container-highest', 'text-on-surface-variant');
+                stepIndicators[1].classList.add('bg-primary', 'text-on-primary', 'neon-glow-cyan');
+                stepLabels[1].classList.remove('text-on-surface-variant');
+                stepLabels[1].classList.add('text-primary');
+            } else if (step === 1) {
+                step2.classList.add('hidden');
+                step1.classList.remove('hidden');
+                progressBar.style.width = '33.3%';
+                
+                stepIndicators[1].classList.add('bg-surface-container-highest', 'text-on-surface-variant');
+                stepIndicators[1].classList.remove('bg-primary', 'text-on-primary', 'neon-glow-cyan');
+                stepLabels[1].classList.add('text-on-surface-variant');
+                stepLabels[1].classList.remove('text-primary');
+            } else if (step === 3) {
+                // Final completion logic
+                alert('Profile Created Successfully! Welcome to SkillSwap.');
+                progressBar.style.width = '100%';
+                stepIndicators[2].classList.remove('bg-surface-container-highest', 'text-on-surface-variant');
+                stepIndicators[2].classList.add('bg-primary', 'text-on-primary', 'neon-glow-cyan');
+                stepLabels[2].classList.remove('text-on-surface-variant');
+                stepLabels[2].classList.add('text-primary');
+            }
+        }
+
+        // Add some atmospheric micro-interactions
+        document.querySelectorAll('.glass-panel').forEach(panel => {
+            panel.addEventListener('mousemove', (e) => {
+                const { left, top, width, height } = panel.getBoundingClientRect();
+                const x = (e.clientX - left) / width;
+                const y = (e.clientY - top) / height;
+                panel.style.boxShadow = `0 10px 30px -15px rgba(0, 219, 233, ${0.1 + (x * 0.1)})`;
+            });
+        });
+    </script>
+</body></html>

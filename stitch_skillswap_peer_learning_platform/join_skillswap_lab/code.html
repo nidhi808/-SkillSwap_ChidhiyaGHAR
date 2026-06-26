@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SkillSwap | Join The Lab</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@500&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@100..900&family=JetBrains+Mono:wght@100..900&family=Sora:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-container": "#be003b",
+                    "tertiary-fixed-dim": "#ffb2b7",
+                    "on-tertiary-fixed": "#40000e",
+                    "on-secondary-container": "#e5a9ff",
+                    "surface-container-low": "#1a1c20",
+                    "on-surface": "#e2e2e8",
+                    "surface-tint": "#00dbe9",
+                    "secondary-container": "#7d01b1",
+                    "on-primary-container": "#006970",
+                    "surface-container-highest": "#333539",
+                    "inverse-surface": "#e2e2e8",
+                    "error-container": "#93000a",
+                    "primary-fixed": "#7df4ff",
+                    "on-error-container": "#ffdad6",
+                    "on-secondary-fixed-variant": "#7200a3",
+                    "tertiary": "#fff3f3",
+                    "primary-container": "#00f0ff",
+                    "on-tertiary": "#67001c",
+                    "inverse-primary": "#006970",
+                    "error": "#ffb4ab",
+                    "secondary": "#e9b3ff",
+                    "on-secondary-fixed": "#310048",
+                    "on-primary": "#00363a",
+                    "tertiary-container": "#ffcdcf",
+                    "on-primary-fixed-variant": "#004f54",
+                    "outline-variant": "#3b494b",
+                    "tertiary-fixed": "#ffdadb",
+                    "on-surface-variant": "#b9cacb",
+                    "surface-container-high": "#282a2e",
+                    "on-tertiary-fixed-variant": "#91002b",
+                    "on-background": "#e2e2e8",
+                    "background": "#111318",
+                    "surface-container-lowest": "#0c0e12",
+                    "surface-variant": "#333539",
+                    "on-primary-fixed": "#002022",
+                    "surface-dim": "#111318",
+                    "secondary-fixed-dim": "#e9b3ff",
+                    "primary-fixed-dim": "#00dbe9",
+                    "on-error": "#690005",
+                    "surface-bright": "#37393e",
+                    "surface": "#111318",
+                    "on-secondary": "#510074",
+                    "surface-container": "#1e2024",
+                    "secondary-fixed": "#f6d9ff",
+                    "primary": "#dbfcff",
+                    "outline": "#849495",
+                    "inverse-on-surface": "#2f3035"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "base": "8px",
+                    "section-gap": "120px",
+                    "margin-mobile": "16px",
+                    "gutter": "24px",
+                    "margin-desktop": "64px",
+                    "container-max": "1280px"
+            },
+            "fontFamily": {
+                    "headline-xl-mobile": ["Sora"],
+                    "label-sm": ["JetBrains Mono"],
+                    "display-lg": ["Sora"],
+                    "body-md": ["Hanken Grotesk"],
+                    "headline-xl": ["Sora"],
+                    "headline-md": ["Sora"],
+                    "body-lg": ["Hanken Grotesk"]
+            },
+            "fontSize": {
+                    "headline-xl-mobile": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                    "display-lg": ["64px", {"lineHeight": "72px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-xl": ["40px", {"lineHeight": "48px", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "500"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #111318;
+            color: #e2e2e8;
+            overflow-x: hidden;
+        }
+        .glass-panel {
+            background: rgba(22, 27, 34, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .neon-glow {
+            box-shadow: 0 0 20px rgba(0, 219, 233, 0.2);
+        }
+        .cyber-grid {
+            background-image: linear-gradient(rgba(0, 219, 233, 0.05) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(0, 219, 233, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        .spark-gradient {
+            background: linear-gradient(90deg, #00dbe9, #e9b3ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .btn-rainbow-border {
+            position: relative;
+            background: #111318;
+            border-radius: 0.5rem;
+            padding: 1px;
+        }
+        .btn-rainbow-border::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 0.5rem;
+            padding: 2px;
+            background: linear-gradient(45deg, #00dbe9, #7d01b1, #e9b3ff, #00dbe9);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            animation: rotate-gradient 4s linear infinite;
+        }
+        @keyframes rotate-gradient {
+            0% { filter: hue-rotate(0deg); }
+            100% { filter: hue-rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="font-body-md text-body-md antialiased">
+<!-- Header Navigation (TopAppBar) -->
+<header class="fixed top-0 w-full z-50 bg-background/80 border-b border-white/10 backdrop-blur-md">
+<div class="flex justify-between items-center px-margin-mobile md:px-margin-desktop h-16 w-full max-w-container-max mx-auto">
+<div class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">
+                SkillSwap
+            </div>
+<div class="flex items-center gap-base">
+<button class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary-container transition-colors px-4 py-2">
+                    Login
+                </button>
+<div class="btn-rainbow-border">
+<button class="px-6 py-2 bg-background rounded-lg font-label-sm text-label-sm text-primary hover:text-primary-fixed transition-colors">
+                        Sign Up
+                    </button>
+</div>
+</div>
+</div>
+</header>
+<main class="min-h-screen flex flex-col md:flex-row pt-16">
+<!-- Visual Sidecar (Left - Desktop Only) -->
+<div class="hidden md:flex md:w-1/2 relative overflow-hidden items-center justify-center bg-surface-container-lowest">
+<div class="absolute inset-0 cyber-grid opacity-30"></div>
+<!-- Animated Visual Element -->
+<div class="relative z-10 w-full h-full flex flex-col items-center justify-center px-margin-desktop">
+<div class="mb-12 text-center max-w-lg">
+<h2 class="font-display-lg text-display-lg mb-6 leading-tight">
+                        Fuel the <span class="spark-gradient">Spark</span> of Peer Genius.
+                    </h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">
+                        Join a global network of 50k+ creators, engineers, and designers swapping mastery for curiosity. No classrooms, just raw exchange.
+                    </p>
+</div>
+<!-- Abstract Knowledge Visualization -->
+<div class="relative w-full max-w-md aspect-square">
+<div class="absolute inset-0 bg-primary-container/10 rounded-full blur-[100px] animate-pulse"></div>
+<div class="absolute inset-0 flex items-center justify-center">
+<!-- Simulated Data Viz / Knowledge Nodes -->
+<div class="grid grid-cols-3 gap-6">
+<div class="w-24 h-24 rounded-2xl glass-panel flex flex-col items-center justify-center gap-2 border-primary/20 transform -rotate-6 hover:rotate-0 transition-transform">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">code</span>
+<span class="font-label-sm text-label-sm">React</span>
+</div>
+<div class="w-24 h-24 rounded-2xl glass-panel flex flex-col items-center justify-center gap-2 border-secondary/20 transform translate-y-8 hover:translate-y-4 transition-transform">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">brush</span>
+<span class="font-label-sm text-label-sm">UI/UX</span>
+</div>
+<div class="w-24 h-24 rounded-2xl glass-panel flex flex-col items-center justify-center gap-2 border-tertiary-fixed-dim/20 transform rotate-12 hover:rotate-6 transition-transform">
+<span class="material-symbols-outlined text-tertiary-fixed-dim" style="font-variation-settings: 'FILL' 1;">data_thresholding</span>
+<span class="font-label-sm text-label-sm">Data Viz</span>
+</div>
+<div class="w-24 h-24 rounded-2xl glass-panel flex flex-col items-center justify-center gap-2 border-primary/20 col-span-2 mx-auto mt-4 hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">psychology</span>
+<span class="font-label-sm text-label-sm">Machine Learning</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Background Gradient Blobs -->
+<div class="absolute top-[-10%] right-[-10%] w-[400px] h-[400px] bg-secondary-container/10 rounded-full blur-[120px]"></div>
+<div class="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] bg-primary-container/10 rounded-full blur-[120px]"></div>
+</div>
+<!-- Sign Up Form Section (Right/Center) -->
+<div class="w-full md:w-1/2 flex items-center justify-center px-margin-mobile md:px-margin-desktop py-12 relative">
+<!-- Mobile Grid Bg -->
+<div class="absolute inset-0 md:hidden cyber-grid opacity-10 pointer-events-none"></div>
+<div class="w-full max-w-md z-10">
+<div class="mb-10">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container-high border border-white/10 mb-6">
+<span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
+<span class="font-label-sm text-label-sm uppercase tracking-widest text-primary">The Lab Is Open</span>
+</div>
+<h1 class="font-headline-xl text-headline-xl md:font-display-lg md:text-headline-xl mb-3">Join the Lab</h1>
+<p class="text-on-surface-variant font-body-md">Create your profile and start exchanging skills today.</p>
+</div>
+<form class="space-y-6" id="signupForm">
+<!-- Social Logins -->
+<div class="grid grid-cols-2 gap-4">
+<button class="flex items-center justify-center gap-3 py-3 px-4 glass-panel rounded-xl hover:bg-surface-container-high transition-colors group" type="button">
+<svg class="w-5 h-5" viewbox="0 0 24 24">
+<path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path>
+<path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path>
+<path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"></path>
+<path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"></path>
+</svg>
+<span class="font-label-sm text-label-sm">Google</span>
+</button>
+<button class="flex items-center justify-center gap-3 py-3 px-4 glass-panel rounded-xl hover:bg-surface-container-high transition-colors group" type="button">
+<svg class="w-5 h-5 text-white" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"></path>
+</svg>
+<span class="font-label-sm text-label-sm">GitHub</span>
+</button>
+</div>
+<div class="relative py-4 flex items-center justify-center">
+<div class="flex-grow border-t border-white/5"></div>
+<span class="flex-shrink mx-4 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Or continue with</span>
+<div class="flex-grow border-t border-white/5"></div>
+</div>
+<!-- Email Form Fields -->
+<div class="space-y-4">
+<div class="group">
+<label class="block font-label-sm text-label-sm text-on-surface-variant mb-2 group-focus-within:text-primary transition-colors" for="name">Full Name</label>
+<input class="w-full bg-surface-container-lowest border-outline-variant rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-container focus:border-primary-container outline-none transition-all placeholder:text-on-surface-variant/30 text-on-surface" id="name" placeholder="Alex Rivera" type="text"/>
+</div>
+<div class="group">
+<label class="block font-label-sm text-label-sm text-on-surface-variant mb-2 group-focus-within:text-primary transition-colors" for="email">Email Address</label>
+<input class="w-full bg-surface-container-lowest border-outline-variant rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-container focus:border-primary-container outline-none transition-all placeholder:text-on-surface-variant/30 text-on-surface" id="email" placeholder="name@lab.skillswap.io" type="email"/>
+</div>
+<div class="group">
+<label class="block font-label-sm text-label-sm text-on-surface-variant mb-2 group-focus-within:text-primary transition-colors" for="password">Master Password</label>
+<div class="relative">
+<input class="w-full bg-surface-container-lowest border-outline-variant rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-container focus:border-primary-container outline-none transition-all placeholder:text-on-surface-variant/30 text-on-surface" id="password" placeholder="••••••••" type="password"/>
+<button class="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary" type="button">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Terms -->
+<div class="flex items-start gap-3">
+<input class="mt-1 w-4 h-4 bg-surface-container-lowest border-outline-variant rounded text-primary focus:ring-primary-container" id="terms" type="checkbox"/>
+<label class="font-label-sm text-label-sm text-on-surface-variant leading-tight" for="terms">
+                            I agree to the <a class="text-primary hover:underline" href="#">Community Guidelines</a> and <a class="text-primary hover:underline" href="#">Privacy Protocol</a>.
+                        </label>
+</div>
+<!-- Submit Button -->
+<button class="w-full bg-primary-container text-on-primary-container font-headline-md text-body-md font-bold py-4 rounded-xl hover:scale-[1.02] active:scale-95 transition-all neon-glow flex items-center justify-center gap-2" type="submit">
+                        Initialize Profile
+                        <span class="material-symbols-outlined">bolt</span>
+</button>
+<p class="text-center font-label-sm text-label-sm text-on-surface-variant">
+                        Already in the lab? <a class="text-secondary hover:underline" href="#">Sign In</a>
+</p>
+</form>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full py-12 bg-surface-container-lowest border-t border-white/5">
+<div class="flex flex-col md:flex-row justify-between items-center px-margin-mobile md:px-margin-desktop gap-base w-full max-w-container-max mx-auto">
+<div class="flex flex-col gap-2 text-center md:text-left">
+<div class="font-headline-md text-headline-md text-primary">SkillSwap</div>
+<div class="font-label-sm text-label-sm text-secondary">© 2024 SkillSwap. Part of The Spark ecosystem.</div>
+</div>
+<div class="flex gap-gutter mt-8 md:mt-0">
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors opacity-80 hover:opacity-100" href="#">Terms</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors opacity-80 hover:opacity-100" href="#">Privacy</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors opacity-80 hover:opacity-100" href="#">Community Guidelines</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors opacity-80 hover:opacity-100" href="#">Support</a>
+</div>
+</div>
+</footer>
+<script>
+        // Micro-interactions and effects
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('signupForm');
+            const inputs = form.querySelectorAll('input');
+
+            // Floating movement for background elements
+            const floatingElements = document.querySelectorAll('.glass-panel');
+            document.addEventListener('mousemove', (e) => {
+                const mouseX = e.clientX / window.innerWidth;
+                const mouseY = e.clientY / window.innerHeight;
+
+                floatingElements.forEach((el, index) => {
+                    const depth = (index + 1) * 10;
+                    const moveX = (mouseX - 0.5) * depth;
+                    const moveY = (mouseY - 0.5) * depth;
+                    el.style.transform = `translate(${moveX}px, ${moveY}px) ${el.dataset.originalTransform || ''}`;
+                });
+            });
+
+            // Store original transforms for mousemove
+            floatingElements.forEach(el => {
+                el.dataset.originalTransform = window.getComputedStyle(el).transform === 'none' ? '' : window.getComputedStyle(el).transform;
+            });
+
+            // Input focus glow
+            inputs.forEach(input => {
+                input.addEventListener('focus', () => {
+                    input.parentElement.classList.add('neon-glow');
+                });
+                input.addEventListener('blur', () => {
+                    input.parentElement.classList.remove('neon-glow');
+                });
+            });
+
+            // Form submission logic (simulated)
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const btn = form.querySelector('button[type="submit"]');
+                btn.innerHTML = '<span class="material-symbols-outlined animate-spin">refresh</span> Accessing Mainframe...';
+                
+                setTimeout(() => {
+                    btn.innerHTML = 'Welcome to the Lab';
+                    btn.classList.replace('bg-primary-container', 'bg-green-500');
+                    btn.classList.replace('text-on-primary-container', 'text-white');
+                }, 1500);
+            });
+        });
+    </script>
+</body></html>
