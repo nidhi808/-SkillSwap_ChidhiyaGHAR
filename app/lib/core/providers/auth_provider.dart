@@ -82,8 +82,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
         return;
       }
       // Verify token by fetching current user
-      final data = await _api.get<Map<String, dynamic>>(ApiConstants.authMe);
-      final user = UserModel.fromJson(data['user'] as Map<String, dynamic>);
+      final response = await _api.get<Map<String, dynamic>>(ApiConstants.authMe);
+      final data = response['data'] as Map<String, dynamic>;
+      final user = UserModel.fromJson(data);
       ProfileModel? profile;
       if (data['profile'] != null) {
         profile = ProfileModel.fromJson(data['profile'] as Map<String, dynamic>);
@@ -239,8 +240,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = const AuthState(status: AuthStatus.unauthenticated);
   }
 
-  // ── Helper: process auth response ─────────────────────────────
-  Future<void> _handleAuthResponse(Map<String, dynamic> data) async {
+  Future<void> _handleAuthResponse(Map<String, dynamic> response) async {
+    final data = response['data'] is Map<String, dynamic> ? response['data'] as Map<String, dynamic> : response;
     final accessToken  = data['accessToken'] as String?;
     final refreshToken = data['refreshToken'] as String?;
 

@@ -30,13 +30,15 @@ function initSocketServer(server) {
       const token = socket.handshake.auth?.token || socket.handshake.headers?.authorization?.split(' ')[1]
       if (!token) return next(new Error('Authentication token missing.'))
 
-      const jwtSecret = (process.env.JWT_SECRET || '').replace(/^["']|["']$/g, '').trim()
-      const decoded = jwt.verify(token, jwtSecret)
+      const { data: { user: supabaseUser }, error: authError } = await supabaseAdmin.auth.getUser(token)
+      if (authError || !supabaseUser) {
+        return next(new Error('Invalid or expired token.'))
+      }
 
       const { data: user, error } = await supabaseAdmin
         .from('users')
         .select('id, username, role')
-        .eq('id', decoded.userId)
+        .eq('id', supabaseUser.id)
         .single()
 
       if (error || !user) return next(new Error('Invalid token.'))

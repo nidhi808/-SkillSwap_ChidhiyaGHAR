@@ -26,6 +26,9 @@ class _SkillSetupWizardState extends ConsumerState<SkillSetupWizard> {
   List<SkillCategoryModel> _categories = [];
   bool _loadingSkills = true;
 
+  final Set<String> _offeredSkillIds = {};
+  final Set<String> _wantedSkillIds = {};
+  String _searchQuery = '';
   bool _addingCustomSkill = false;
 
   @override
