@@ -10,7 +10,7 @@ class SkillCategoryModel with _$SkillCategoryModel {
     required String name,
     required String slug,
     String? icon,
-    required String color,
+    @Default('#6366f1') String color,
     String? description,
   }) = _SkillCategoryModel;
 

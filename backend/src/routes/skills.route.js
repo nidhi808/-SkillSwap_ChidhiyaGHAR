@@ -12,11 +12,13 @@ router.use(normalLimiter)
 router.get('/categories', skillsController.getCategories)
 router.get('/categories/:categoryId', skillsController.getCategoryWithSkills)
 router.get('/', skillsController.getAllSkills)
+router.get('/all', skillsController.getAllSkills)
 router.get('/search', skillsController.searchSkills)
 router.get('/:skillId', skillsController.getSkillById)
 
 // ✅ Authenticated: user skills
 router.use(verifyToken)
+router.post('/custom', skillsController.createCustomSkill)
 router.get('/user/offered', skillsController.getMyOfferedSkills)
 router.get('/user/wanted', skillsController.getMyWantedSkills)
 router.post('/user/offered', addSkillValidator, skillsController.addOfferedSkill)

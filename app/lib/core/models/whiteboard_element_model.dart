@@ -8,9 +8,9 @@ class WhiteboardElementModel with _$WhiteboardElementModel {
   const factory WhiteboardElementModel({
     required String id,
     required String type,
-    required List<Map<String, double>> points,
-    required String color,
-    required double strokeWidth,
+    @Default(<Map<String, double>>[]) List<Map<String, double>> points,
+    @Default('#FFFFFF') String color,
+    @JsonKey(name: 'stroke_width') @Default(3.0) double strokeWidth,
     String? text,
     double? x,
     double? y,

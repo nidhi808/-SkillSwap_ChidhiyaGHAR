@@ -7,14 +7,14 @@ part 'notification_model.g.dart';
 class NotificationModel with _$NotificationModel {
   const factory NotificationModel({
     required String id,
-    required String userId,
-    String? actorId,
+    @JsonKey(name: 'user_id') required String userId,
+    @JsonKey(name: 'actor_id') String? actorId,
     required String type,
     required String title,
     String? body,
     Map<String, dynamic>? data,
-    required bool isRead,
-    required DateTime createdAt,
+    @JsonKey(name: 'is_read') @Default(false) bool isRead,
+    @JsonKey(name: 'created_at') DateTime? createdAt,
   }) = _NotificationModel;
 
   factory NotificationModel.fromJson(Map<String, dynamic> json) =>

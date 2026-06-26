@@ -175,9 +175,42 @@ const updateSkill = async (req, res, next) => {
   } catch (err) { next(err) }
 }
 
+// ✅ POST /api/skills/custom (Authenticated user creates custom skill)
+const createCustomSkill = async (req, res, next) => {
+  try {
+    const { name, description } = req.body
+    if (!name || name.trim() === '') {
+      return res.status(400).json({ error: 'Skill name is required.' })
+    }
+    const cleanName = name.trim()
+    const slug = cleanName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+    
+    // Check if skill with this name or slug already exists
+    let existing = await db.selectOne('skills', '*', { name: cleanName })
+    if (!existing) {
+      existing = await db.selectOne('skills', '*', { slug })
+    }
+    
+    if (existing) {
+      return res.status(200).json({ data: existing })
+    }
+    
+    // Create new custom skill
+    const [result] = await db.insert('skills', {
+      name: cleanName,
+      slug,
+      description: description || `Custom skill: ${cleanName}`,
+      is_verified: false,
+      is_active: true
+    })
+    
+    return res.status(201).json({ data: result })
+  } catch (err) { next(err) }
+}
+
 module.exports = {
   getCategories, getCategoryWithSkills, getAllSkills, searchSkills, getSkillById,
   getMyOfferedSkills, getMyWantedSkills, addOfferedSkill, updateOfferedSkill, removeOfferedSkill,
   addWantedSkill, updateWantedSkill, removeWantedSkill,
-  createSkill, verifySkill, updateSkill
+  createSkill, verifySkill, updateSkill, createCustomSkill
 }

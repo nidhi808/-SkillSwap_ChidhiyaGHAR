@@ -3,14 +3,13 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
-  agora_rtc_engine
   connectivity_plus
   file_selector_windows
   firebase_core
   flutter_secure_storage_windows
-  iris_method_channel
   local_auth_windows
   permission_handler_windows
+  tencent_rtc_sdk
   url_launcher_windows
 )
 

@@ -9,12 +9,12 @@ part 'conversation_model.g.dart';
 class ConversationModel with _$ConversationModel {
   const factory ConversationModel({
     required String id,
-    required String userAId,
-    required String userBId,
-    required DateTime lastMessageAt,
-    ProfileModel? otherUser,
-    MessageModel? lastMessage,
-    @Default(0) int unreadCount,
+    @JsonKey(name: 'user_a_id') required String userAId,
+    @JsonKey(name: 'user_b_id') required String userBId,
+    @JsonKey(name: 'last_message_at') DateTime? lastMessageAt,
+    @JsonKey(name: 'other_user') ProfileModel? otherUser,
+    @JsonKey(name: 'last_message') MessageModel? lastMessage,
+    @JsonKey(name: 'unread_count') @Default(0) int unreadCount,
   }) = _ConversationModel;
 
   factory ConversationModel.fromJson(Map<String, dynamic> json) =>

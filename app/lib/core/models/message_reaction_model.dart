@@ -7,8 +7,8 @@ part 'message_reaction_model.g.dart';
 class MessageReactionModel with _$MessageReactionModel {
   const factory MessageReactionModel({
     required String id,
-    required String messageId,
-    required String userId,
+    @JsonKey(name: 'message_id') required String messageId,
+    @JsonKey(name: 'user_id') required String userId,
     required String emoji,
   }) = _MessageReactionModel;
 

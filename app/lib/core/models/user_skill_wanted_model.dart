@@ -8,12 +8,12 @@ part 'user_skill_wanted_model.g.dart';
 class UserSkillWantedModel with _$UserSkillWantedModel {
   const factory UserSkillWantedModel({
     required String id,
-    required String userId,
-    required String skillId,
-    required SkillModel skill,
-    required String currentLevel,
-    required String targetLevel,
-    required String urgency,
+    @JsonKey(name: 'user_id') required String userId,
+    @JsonKey(name: 'skill_id') required String skillId,
+    SkillModel? skill,
+    @JsonKey(name: 'current_level') @Default('beginner') String currentLevel,
+    @JsonKey(name: 'target_level') @Default('intermediate') String targetLevel,
+    @Default('medium') String urgency,
     String? notes,
   }) = _UserSkillWantedModel;
 

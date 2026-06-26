@@ -9,12 +9,12 @@ class UserModel with _$UserModel {
     required String id,
     required String email,
     String? username,
-    required String role,
-    required bool isEmailVerified,
-    required bool isActive,
-    required bool mfaEnabled,
-    required DateTime createdAt,
-    required DateTime updatedAt,
+    @Default('user') String role,
+    @JsonKey(name: 'is_email_verified') @Default(false) bool isEmailVerified,
+    @JsonKey(name: 'is_active') @Default(true) bool isActive,
+    @JsonKey(name: 'mfa_enabled') @Default(false) bool mfaEnabled,
+    @JsonKey(name: 'created_at') DateTime? createdAt,
+    @JsonKey(name: 'updated_at') DateTime? updatedAt,
   }) = _UserModel;
 
   factory UserModel.fromJson(Map<String, dynamic> json) =>
