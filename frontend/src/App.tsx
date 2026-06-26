@@ -180,7 +180,12 @@ function App() {
     setView('dashboard');
   };
 
-
+  // Redirect logged-out users trying to access protected views
+  useEffect(() => {
+    if (!isLoggedIn && view !== 'landing' && view !== 'auth') {
+      setView('landing');
+    }
+  }, [isLoggedIn, view]);
 
   const handleLogout = async () => {
     try {
@@ -218,50 +223,54 @@ function App() {
               >
                 Home
               </button>
-              <button 
-                onClick={() => setView('skills')}
-                className={`font-body-md text-body-md transition-colors duration-200 outline-none border-none bg-transparent cursor-pointer ${
-                  view === 'skills' ? 'text-primary font-bold border-b-2 border-primary pb-1' : 'text-on-surface-variant hover:text-primary'
-                }`}
-              >
-                Browse Skills
-              </button>
-              <button 
-                onClick={() => {
-                  if (isLoggedIn) {
-                    setView('dashboard');
-                  } else {
-                    setView('auth');
-                  }
-                }}
-                className={`font-body-md text-body-md transition-colors duration-200 outline-none border-none bg-transparent cursor-pointer ${
-                  view === 'dashboard' ? 'text-primary font-bold border-b-2 border-primary pb-1' : 'text-on-surface-variant hover:text-primary'
-                }`}
-              >
-                My Matches
-              </button>
-              <button 
-                onClick={() => {
-                  if (isLoggedIn) {
-                    setView('sessions');
-                  } else {
-                    setView('auth');
-                  }
-                }}
-                className={`font-body-md text-body-md transition-colors duration-200 outline-none border-none bg-transparent cursor-pointer ${
-                  view === 'sessions' ? 'text-primary font-bold border-b-2 border-primary pb-1' : 'text-on-surface-variant hover:text-primary'
-                }`}
-              >
-                Schedule
-              </button>
-              <button 
-                onClick={() => setView('leaderboard')}
-                className={`font-body-md text-body-md transition-colors duration-200 outline-none border-none bg-transparent cursor-pointer ${
-                  view === 'leaderboard' ? 'text-primary font-bold border-b-2 border-primary pb-1' : 'text-on-surface-variant hover:text-primary'
-                }`}
-              >
-                Leaderboard
-              </button>
+              {isLoggedIn && (
+                <>
+                  <button 
+                    onClick={() => setView('skills')}
+                    className={`font-body-md text-body-md transition-colors duration-200 outline-none border-none bg-transparent cursor-pointer ${
+                      view === 'skills' ? 'text-primary font-bold border-b-2 border-primary pb-1' : 'text-on-surface-variant hover:text-primary'
+                    }`}
+                  >
+                    Browse Skills
+                  </button>
+                  <button 
+                    onClick={() => {
+                      if (isLoggedIn) {
+                        setView('dashboard');
+                      } else {
+                        setView('auth');
+                      }
+                    }}
+                    className={`font-body-md text-body-md transition-colors duration-200 outline-none border-none bg-transparent cursor-pointer ${
+                      view === 'dashboard' ? 'text-primary font-bold border-b-2 border-primary pb-1' : 'text-on-surface-variant hover:text-primary'
+                    }`}
+                  >
+                    My Matches
+                  </button>
+                  <button 
+                    onClick={() => {
+                      if (isLoggedIn) {
+                        setView('sessions');
+                      } else {
+                        setView('auth');
+                      }
+                    }}
+                    className={`font-body-md text-body-md transition-colors duration-200 outline-none border-none bg-transparent cursor-pointer ${
+                      view === 'sessions' ? 'text-primary font-bold border-b-2 border-primary pb-1' : 'text-on-surface-variant hover:text-primary'
+                    }`}
+                  >
+                    Schedule
+                  </button>
+                  <button 
+                    onClick={() => setView('leaderboard')}
+                    className={`font-body-md text-body-md transition-colors duration-200 outline-none border-none bg-transparent cursor-pointer ${
+                      view === 'leaderboard' ? 'text-primary font-bold border-b-2 border-primary pb-1' : 'text-on-surface-variant hover:text-primary'
+                    }`}
+                  >
+                    Leaderboard
+                  </button>
+                </>
+              )}
             </div>
           </div>
 
